@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import { useApp } from '../context/AppContext';
 import { addFolder, loadFiles, saveFiles, storagePercent } from '../files';
-import { getMemberById, loadTeam } from '../profile';
-import { IconFolder, IconMore, IconPlus, IconUpload } from './Icons';
+import { IconFolder, IconMore, IconPlus, IconUpload } from '../components/Icons';
 
 const fileTypeLabel = {
   doc: 'DOC',
@@ -10,17 +10,9 @@ const fileTypeLabel = {
   pdf: 'PDF',
 };
 
-const Files = ({ query = '' }) => {
+export default function FilesPage() {
+  const { getUser } = useApp();
   const [data, setData] = useState(loadFiles);
-  const team = loadTeam();
-  const needle = query.trim().toLowerCase();
-
-  const folders = data.folders.filter((folder) =>
-    needle ? folder.name.toLowerCase().includes(needle) : true,
-  );
-  const recent = data.recent.filter((file) =>
-    needle ? file.name.toLowerCase().includes(needle) : true,
-  );
 
   function persist(next) {
     setData(next);
@@ -36,7 +28,7 @@ const Files = ({ query = '' }) => {
   const percent = storagePercent(data.storage);
 
   return (
-    <div className="files-page">
+    <div className="page files-page">
       <header className="files-head">
         <div>
           <h1>Files</h1>
@@ -57,11 +49,11 @@ const Files = ({ query = '' }) => {
       <div className="files-layout">
         <div className="files-main">
           <section className="panel">
-            <header className="panel-head split">
+            <header className="panel-head">
               <h2>All Files</h2>
             </header>
             <div className="folder-grid">
-              {folders.map((folder) => (
+              {data.folders.map((folder) => (
                 <article key={folder.id} className="folder-card">
                   <div className="folder-card-top">
                     <span className={`folder-icon tone-${folder.color}`}>
@@ -69,15 +61,10 @@ const Files = ({ query = '' }) => {
                     </span>
                     <div className="folder-members">
                       {folder.memberIds.slice(0, 2).map((id) => {
-                        const member = getMemberById(team, id);
+                        const member = getUser(id);
                         if (!member) return null;
                         return (
-                          <span
-                            key={id}
-                            className="member-avatar small"
-                            style={{ background: `${member.color}22`, color: member.color }}
-                            title={member.name}
-                          >
+                          <span key={id} className="member-avatar small" title={member.name}>
                             {member.initials}
                           </span>
                         );
@@ -94,6 +81,7 @@ const Files = ({ query = '' }) => {
           <section className="panel">
             <header className="panel-head split">
               <h2>Recent File</h2>
+              <button type="button" className="link-btn">View All</button>
             </header>
             <div className="table-wrap">
               <table className="files-table">
@@ -107,7 +95,7 @@ const Files = ({ query = '' }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {recent.map((file) => (
+                  {data.recent.map((file) => (
                     <tr key={file.id}>
                       <td>
                         <span className={`file-type type-${file.type}`}>
@@ -120,15 +108,10 @@ const Files = ({ query = '' }) => {
                       <td>
                         <div className="table-members">
                           {file.memberIds.map((id) => {
-                            const member = getMemberById(team, id);
+                            const member = getUser(id);
                             if (!member) return null;
                             return (
-                              <span
-                                key={id}
-                                className="member-avatar tiny"
-                                style={{ background: `${member.color}22`, color: member.color }}
-                                title={member.name}
-                              >
+                              <span key={id} className="member-avatar tiny" title={member.name}>
                                 {member.initials}
                               </span>
                             );
@@ -158,9 +141,7 @@ const Files = ({ query = '' }) => {
               </svg>
               <div className="storage-ring-label">
                 <strong>{percent}%</strong>
-                <span>
-                  {data.storage.usedGb}GB / {data.storage.totalGb}GB
-                </span>
+                <span>{data.storage.usedGb}GB / {data.storage.totalGb}GB</span>
               </div>
             </div>
             <ul className="storage-breakdown">
@@ -182,11 +163,14 @@ const Files = ({ query = '' }) => {
                 <span key={index} style={{ height: `${height}%` }} />
               ))}
             </div>
+            <ul className="activity-legend">
+              <li><span className="dot media" /> Media</li>
+              <li><span className="dot photos" /> Photos</li>
+              <li><span className="dot docs" /> Docs</li>
+            </ul>
           </section>
         </aside>
       </div>
     </div>
   );
-};
-
-export default Files;
+}

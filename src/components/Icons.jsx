@@ -111,6 +111,46 @@ export const IconBell = () =>
     </>,
   );
 
+export const IconHome = () =>
+  svg(
+    <>
+      <path d="M4 11 12 4l8 7" />
+      <path d="M6 10v9h12v-9" />
+    </>,
+  );
+
+export const IconPlay = () =>
+  svg(<path d="M8 5v14l11-7-11-7Z" fill="currentColor" stroke="none" />);
+
+export const IconLink = () =>
+  svg(
+    <>
+      <path d="M10 13a3 3 0 0 0 4.2 0l2.8-2.8a3 3 0 0 0-4.2-4.2L11 7" />
+      <path d="M14 11a3 3 0 0 0-4.2 0L7 13.8a3 3 0 1 0 4.2 4.2L13 17" />
+    </>,
+  );
+
+export const IconMessage = () =>
+  svg(
+    <>
+      <path d="M21 12a8 8 0 0 1-8 8H7l-4 3V12a8 8 0 0 1 8-8h4a8 8 0 0 1 4 8Z" />
+    </>,
+  );
+
+export const IconPaperclip = () =>
+  svg(
+    <>
+      <path d="m16 6-8.5 8.5a2.5 2.5 0 0 0 3.5 3.5l8.5-8.5a4 4 0 0 0-5.7-5.7L5.5 15.5a6 6 0 0 0 8.5 8.5" />
+    </>,
+  );
+
+export const IconTimeline = () =>
+  svg(
+    <>
+      <path d="M4 18V8M10 18V4M16 18v-6M22 18V12" />
+    </>,
+  );
+
 export const IconFolder = () =>
   svg(
     <>
@@ -156,3 +196,38 @@ export const IconChevronLeft = () =>
 
 export const IconChevronRight = () =>
   svg(<path d="m9 6 6 6-6 6" />);
+
+export function IconChevronDown({ className }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+export const IconUsers = () =>
+  svg(
+    <>
+      <path d="M16 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1" />
+      <circle cx="9" cy="7" r="3" />
+      <path d="M22 19v-1a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+    </>,
+  );
+
+export const IconX = () =>
+  svg(
+    <>
+      <path d="M18 6 6 18M6 6l12 12" />
+    </>,
+  );

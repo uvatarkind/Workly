@@ -22,17 +22,27 @@ const AreaChart = ({ labels, created, completed }) => {
 
   return (
     <svg className="area-chart" viewBox={`0 0 ${width} ${height + 28}`} role="img" aria-label="Tasks created and completed">
-      <path d={completedPath.area} fill="rgba(139, 124, 246, 0.22)" />
-      <path d={createdPath.area} fill="rgba(76, 111, 255, 0.18)" />
-      <path d={completedPath.line} fill="none" stroke="#8b7cf6" strokeWidth="3" />
-      <path d={createdPath.line} fill="none" stroke="#4c6fff" strokeWidth="3" />
+      <defs>
+        <linearGradient id="area-purple" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(139, 124, 246, 0.35)" />
+          <stop offset="100%" stopColor="rgba(139, 124, 246, 0)" />
+        </linearGradient>
+        <linearGradient id="area-blue" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(76, 111, 255, 0.3)" />
+          <stop offset="100%" stopColor="rgba(76, 111, 255, 0)" />
+        </linearGradient>
+      </defs>
+      <path d={completedPath.area} fill="url(#area-purple)" />
+      <path d={createdPath.area} fill="url(#area-blue)" />
+      <path d={completedPath.line} fill="none" stroke="#8b7cf6" strokeWidth="2.5" />
+      <path d={createdPath.line} fill="none" stroke="#4c6fff" strokeWidth="2.5" />
       {labels.map((label, index) => (
         <text
           key={label + index}
           x={createdPath.xs[index] ?? pad}
           y={height + 22}
           textAnchor="middle"
-          fill="#898989"
+          className="chart-label"
           fontSize="11"
         >
           {label}

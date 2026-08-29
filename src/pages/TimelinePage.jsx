@@ -1,34 +1,31 @@
 import { useMemo, useState } from 'react';
-import { getMemberById, loadTeam } from '../profile';
+import { Link } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 import {
   barMetrics,
   buildTimelineGroups,
   completionTrend,
   formatMonthLabel,
   getMonthDays,
-} from '../timeline';
-import { IconChevronLeft, IconChevronRight, IconMore, IconPlus } from './Icons';
-import Sparkline from './Sparkline';
+} from '../utils/timeline';
+import { IconChevronLeft, IconChevronRight, IconMore, IconPlus } from '../components/Icons';
+import Sparkline from '../components/Sparkline';
 
-const Timeline = ({ tasks, query = '', onInvite }) => {
+export default function TimelinePage() {
+  const { state, getUser } = useApp();
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [expanded, setExpanded] = useState({});
-  const team = loadTeam();
 
-  const needle = query.trim().toLowerCase();
-  const filteredTasks = useMemo(
-    () =>
-      tasks.filter((task) =>
-        needle ? task.title.toLowerCase().includes(needle) : true,
-      ),
-    [tasks, needle],
-  );
-
-  const groups = useMemo(() => buildTimelineGroups(filteredTasks), [filteredTasks]);
+  const tasks = state.tasks;
+  const groups = useMemo(() => buildTimelineGroups(tasks), [tasks]);
   const days = useMemo(() => getMonthDays(year, month), [year, month]);
-  const trend = useMemo(() => completionTrend(filteredTasks), [filteredTasks]);
+  const trend = useMemo(() => completionTrend(tasks), [tasks]);
+
+  const teamWorkspace = state.workspaces.find((w) => w.type === 'team');
+  const memberIds = teamWorkspace?.memberIds ?? [];
+  const members = memberIds.map((id) => getUser(id)).filter(Boolean);
 
   function goToday() {
     const now = new Date();
@@ -46,17 +43,14 @@ const Timeline = ({ tasks, query = '', onInvite }) => {
     setExpanded((current) => ({ ...current, [id]: !(current[id] ?? true) }));
   }
 
-  const visibleMembers = team.slice(0, 3);
-  const extraMembers = Math.max(team.length - 3, 0);
+  const completedCount = tasks.filter((t) => t.status === 'done').length;
 
   return (
-    <div className="timeline-page">
+    <div className="page timeline-page">
       <header className="timeline-head">
         <div className="timeline-head-left">
           <h1>Timeline</h1>
-          <button type="button" className="pill-btn" onClick={goToday}>
-            Today
-          </button>
+          <button type="button" className="pill-btn" onClick={goToday}>Today</button>
           <div className="timeline-nav">
             <button type="button" className="icon-btn" aria-label="Previous month" onClick={() => shiftMonth(-1)}>
               <IconChevronLeft />
@@ -68,22 +62,19 @@ const Timeline = ({ tasks, query = '', onInvite }) => {
           </div>
         </div>
         <div className="timeline-head-right">
-          <button type="button" className="primary-btn" onClick={onInvite}>
+          <Link to={`/workspace/${teamWorkspace?.id ?? 'ws-acme'}/members`} className="primary-btn">
             <IconPlus />
             Invite
-          </button>
+          </Link>
           <div className="timeline-members" aria-label="Team">
-            {visibleMembers.map((member) => (
-              <span
-                key={member.id}
-                className="member-avatar small"
-                style={{ background: `${member.color}22`, color: member.color }}
-                title={member.name}
-              >
+            {members.slice(0, 3).map((member) => (
+              <span key={member.id} className="member-avatar small" title={member.name}>
                 {member.initials}
               </span>
             ))}
-            {extraMembers > 0 && <span className="member-avatar small muted">+{extraMembers}</span>}
+            {members.length > 3 && (
+              <span className="member-avatar small muted">+{members.length - 3}</span>
+            )}
           </div>
         </div>
       </header>
@@ -106,37 +97,31 @@ const Timeline = ({ tasks, query = '', onInvite }) => {
                     <span className="timeline-group-title">{group.label}</span>
                     <span className="timeline-group-members">
                       {group.assigneeIds.slice(0, 2).map((id) => {
-                        const member = getMemberById(team, id);
+                        const member = getUser(id);
                         if (!member) return null;
                         return (
-                          <span
-                            key={id}
-                            className="member-avatar tiny"
-                            style={{ background: `${member.color}22`, color: member.color }}
-                          >
-                            {member.initials}
-                          </span>
+                          <span key={id} className="member-avatar tiny">{member.initials}</span>
                         );
                       })}
                     </span>
-                    <span className="timeline-group-more" aria-hidden="true">
-                      <IconMore />
-                    </span>
+                    <span className="timeline-group-more" aria-hidden="true"><IconMore /></span>
                   </button>
-                  {open &&
-                    group.tasks.map((task) => (
-                      <div key={task.id} className="timeline-task-row">
-                        <span className="timeline-task-dot" />
-                        <span className="timeline-task-name">{task.title}</span>
-                      </div>
-                    ))}
+                  {open && group.tasks.map((task) => (
+                    <div key={task.id} className="timeline-task-row">
+                      <span className="timeline-task-dot" />
+                      <span className="timeline-task-name">{task.title}</span>
+                    </div>
+                  ))}
                 </div>
               );
             })}
           </div>
 
           <div className="timeline-chart-wrap">
-            <div className="timeline-days" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(44px, 1fr))` }}>
+            <div
+              className="timeline-days"
+              style={{ gridTemplateColumns: `repeat(${days.length}, minmax(44px, 1fr))` }}
+            >
               {days.map((day) => (
                 <div key={day.stamp} className={day.isToday ? 'timeline-day today' : 'timeline-day'}>
                   <span>{day.weekday}</span>
@@ -160,35 +145,34 @@ const Timeline = ({ tasks, query = '', onInvite }) => {
                         ))}
                       </div>
                     </div>
-                    {open &&
-                      group.tasks.map((task) => {
-                        const metrics = barMetrics(task, days);
-                        return (
-                          <div key={task.id} className="timeline-track-row">
-                            <div
-                              className="timeline-track-grid"
-                              style={{ gridTemplateColumns: `repeat(${days.length}, minmax(44px, 1fr))` }}
-                            >
-                              {days.map((day) => (
-                                <span key={day.stamp} className={day.isToday ? 'grid-cell today' : 'grid-cell'} />
-                              ))}
-                              {metrics && (
-                                <div
-                                  className={`timeline-bar tone-${metrics.tone}`}
-                                  style={{ left: metrics.left, width: metrics.width }}
-                                  title={`${metrics.label} · ${metrics.progress}%`}
-                                >
-                                  <span className="timeline-bar-fill" style={{ width: `${metrics.progress}%` }} />
-                                  <span className="timeline-bar-label">
-                                    {metrics.label}
-                                    <strong>{metrics.progress}%</strong>
-                                  </span>
-                                </div>
-                              )}
-                            </div>
+                    {open && group.tasks.map((task) => {
+                      const metrics = barMetrics(task, days);
+                      return (
+                        <div key={task.id} className="timeline-track-row">
+                          <div
+                            className="timeline-track-grid"
+                            style={{ gridTemplateColumns: `repeat(${days.length}, minmax(44px, 1fr))` }}
+                          >
+                            {days.map((day) => (
+                              <span key={day.stamp} className={day.isToday ? 'grid-cell today' : 'grid-cell'} />
+                            ))}
+                            {metrics && (
+                              <div
+                                className={`timeline-bar tone-${metrics.tone}`}
+                                style={{ left: metrics.left, width: metrics.width }}
+                                title={`${metrics.label} · ${metrics.progress}%`}
+                              >
+                                <span className="timeline-bar-fill" style={{ width: `${metrics.progress}%` }} />
+                                <span className="timeline-bar-label">
+                                  {metrics.label}
+                                  <strong>{metrics.progress}%</strong>
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        );
-                      })}
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })}
@@ -198,17 +182,15 @@ const Timeline = ({ tasks, query = '', onInvite }) => {
 
         <aside className="timeline-insight" aria-label="Completion trend">
           <h2>Complete Task</h2>
-          <Sparkline values={trend} color="#4c6fff" />
+          <Sparkline values={trend} color="#8b7cf6" />
           <div className="timeline-insight-stats">
             {trend.map((value, index) => (
               <span key={index}>{value || '–'}</span>
             ))}
           </div>
-          <p>{filteredTasks.filter((task) => task.done).length} tasks completed this month</p>
+          <p>{completedCount} tasks completed this month</p>
         </aside>
       </div>
     </div>
   );
-};
-
-export default Timeline;
+}

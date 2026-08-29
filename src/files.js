@@ -1,49 +1,21 @@
-export const FILES_KEY = 'taskflow.files';
+export const FILES_KEY = 'workly.files';
 
 const folderColors = ['blue', 'purple', 'yellow', 'green', 'red', 'orange'];
 
 export const defaultFiles = {
   folders: [
-    { id: 'f1', name: 'Documents', count: 128, color: 'blue', memberIds: ['self'] },
-    { id: 'f2', name: 'Work Project', count: 74, color: 'purple', memberIds: ['self'] },
-    { id: 'f3', name: 'Personal', count: 42, color: 'yellow', memberIds: ['self'] },
-    { id: 'f4', name: 'Design Assets', count: 96, color: 'green', memberIds: ['self'] },
-    { id: 'f5', name: 'Archive', count: 31, color: 'red', memberIds: ['self'] },
-    { id: 'f6', name: 'Shared', count: 18, color: 'orange', memberIds: ['self'] },
+    { id: 'f1', name: 'Documents', count: 128, color: 'blue', memberIds: ['u1', 'u2'] },
+    { id: 'f2', name: 'Work Project', count: 74, color: 'purple', memberIds: ['u1', 'u3'] },
+    { id: 'f3', name: 'Personal', count: 42, color: 'yellow', memberIds: ['u1'] },
+    { id: 'f4', name: 'Design Assets', count: 96, color: 'green', memberIds: ['u2', 'u4'] },
+    { id: 'f5', name: 'Archive', count: 31, color: 'red', memberIds: ['u1'] },
+    { id: 'f6', name: 'Shared', count: 18, color: 'orange', memberIds: ['u1', 'u2', 'u3'] },
   ],
   recent: [
-    {
-      id: 'r1',
-      name: 'Proposal.docx',
-      type: 'doc',
-      size: '2.4 MB',
-      modified: 'Aug 20, 2026',
-      memberIds: ['self'],
-    },
-    {
-      id: 'r2',
-      name: 'Background.jpg',
-      type: 'image',
-      size: '1.1 MB',
-      modified: 'Aug 18, 2026',
-      memberIds: ['self'],
-    },
-    {
-      id: 'r3',
-      name: 'TaskFlow.fig',
-      type: 'design',
-      size: '8.6 MB',
-      modified: 'Aug 15, 2026',
-      memberIds: ['self'],
-    },
-    {
-      id: 'r4',
-      name: 'Sprint-notes.pdf',
-      type: 'pdf',
-      size: '540 KB',
-      modified: 'Aug 12, 2026',
-      memberIds: ['self'],
-    },
+    { id: 'r1', name: 'Proposal.docx', type: 'doc', size: '2.9 MB', modified: 'Aug 20, 2026', memberIds: ['u1', 'u2'] },
+    { id: 'r2', name: 'Background.jpg', type: 'image', size: '1.1 MB', modified: 'Aug 18, 2026', memberIds: ['u2'] },
+    { id: 'r3', name: 'Workly.fig', type: 'design', size: '8.6 MB', modified: 'Aug 15, 2026', memberIds: ['u1', 'u3'] },
+    { id: 'r4', name: 'Sprint-notes.pdf', type: 'pdf', size: '540 KB', modified: 'Aug 12, 2026', memberIds: ['u1'] },
   ],
   storage: {
     usedGb: 2.1,
@@ -65,7 +37,7 @@ function normalizeFolder(folder, index) {
     name,
     count: Number(folder?.count) || 0,
     color: folderColors.includes(folder?.color) ? folder.color : folderColors[index % folderColors.length],
-    memberIds: Array.isArray(folder?.memberIds) ? folder.memberIds.map(String) : ['self'],
+    memberIds: Array.isArray(folder?.memberIds) ? folder.memberIds.map(String) : ['u1'],
   };
 }
 
@@ -78,7 +50,7 @@ function normalizeRecent(file) {
     type: String(file?.type ?? 'doc'),
     size: String(file?.size ?? '—'),
     modified: String(file?.modified ?? '—'),
-    memberIds: Array.isArray(file?.memberIds) ? file.memberIds.map(String) : ['self'],
+    memberIds: Array.isArray(file?.memberIds) ? file.memberIds.map(String) : ['u1'],
   };
 }
 
@@ -112,7 +84,7 @@ export function addFolder(files, name) {
       name: trimmed,
       count: 0,
       color: folderColors[files.folders.length % folderColors.length],
-      memberIds: ['self'],
+      memberIds: ['u1'],
     },
     files.folders.length,
   );
