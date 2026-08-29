@@ -95,3 +95,47 @@ export function storagePercent(storage) {
   if (!storage?.totalGb) return 0;
   return Math.min(100, Math.round((storage.usedGb / storage.totalGb) * 100));
 }
+
+function inferFileType(name) {
+  const ext = name.split('.').pop()?.toLowerCase() ?? '';
+  if (['doc', 'docx', 'txt', 'md'].includes(ext)) return 'doc';
+  if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) return 'image';
+  if (['fig'].includes(ext)) return 'design';
+  if (['pdf'].includes(ext)) return 'pdf';
+  return 'doc';
+}
+
+function formatFileSize(bytes) {
+  if (!bytes) return '—';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatModified(date = new Date()) {
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+export function addUploadedFile(files, file, memberId) {
+  if (!file?.name) return files;
+
+  const entry = normalizeRecent({
+    id: crypto.randomUUID(),
+    name: file.name,
+    type: inferFileType(file.name),
+    size: formatFileSize(file.size),
+    modified: formatModified(),
+    memberIds: [memberId],
+  });
+
+  const usedGb = Math.min(
+    files.storage.totalGb,
+    Math.round((files.storage.usedGb + file.size / (1024 ** 3)) * 100) / 100,
+  );
+
+  return {
+    ...files,
+    recent: [entry, ...files.recent].slice(0, 20),
+    storage: { ...files.storage, usedGb },
+  };
+}

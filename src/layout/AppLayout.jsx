@@ -16,8 +16,15 @@ export default function AppLayout() {
     function onOpenTask(e) {
       setActiveTaskId(e.detail);
     }
+    function onCreate() {
+      setCreateOpen(true);
+    }
     window.addEventListener('workly:open-task', onOpenTask);
-    return () => window.removeEventListener('workly:open-task', onOpenTask);
+    window.addEventListener('workly:create', onCreate);
+    return () => {
+      window.removeEventListener('workly:open-task', onOpenTask);
+      window.removeEventListener('workly:create', onCreate);
+    };
   }, []);
 
   return (

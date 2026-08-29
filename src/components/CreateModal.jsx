@@ -12,12 +12,12 @@ const MODES = [
 
 export default function CreateModal({ onClose }) {
   const navigate = useNavigate();
-  const { myWorkspaces, addTask, addProject, addWorkspace, state } = useApp();
+  const { myWorkspaces, addTask, addProject, addWorkspace, state, currentUser } = useApp();
   const [mode, setMode] = useState('task');
   const [title, setTitle] = useState('');
-  const [workspaceId, setWorkspaceId] = useState('ws-acme');
+  const [workspaceId, setWorkspaceId] = useState(myWorkspaces[0]?.id ?? 'ws-personal');
   const [projectId, setProjectId] = useState('p1');
-  const [assigneeId, setAssigneeId] = useState('u1');
+  const [assigneeId, setAssigneeId] = useState(currentUser.id);
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('medium');
   const [wsType, setWsType] = useState('team');

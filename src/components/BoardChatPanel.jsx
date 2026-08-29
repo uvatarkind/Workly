@@ -1,41 +1,44 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { loadBoardChat, saveBoardChat, boardChatSeed } from '../utils/boardChat';
 import { IconMore } from './Icons';
-
-const boardChatSeed = [
-  { id: 'bc1', userId: 'u2', text: 'Can you share the latest wireframes?', createdAt: Date.now() - 5400000 },
-  { id: 'bc2', userId: 'u3', text: 'On it — uploading now.', createdAt: Date.now() - 4800000 },
-  { id: 'bc3', userId: 'u1', text: 'Looks good. Can we adjust the hero section?', createdAt: Date.now() - 3600000 },
-  { id: 'bc4', userId: 'u2', text: 'Sure, I\'ll update it today.', createdAt: Date.now() - 1800000, voice: true },
-];
 
 function formatTime(ts) {
   return new Date(ts).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
 
 export default function BoardChatPanel({ projectId }) {
-  const { state, getUser, getProject } = useApp();
+  const { state, getUser, getProject, currentUser } = useApp();
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState(boardChatSeed);
+  const [messages, setMessages] = useState(() => loadBoardChat(projectId));
 
   const project = getProject(projectId);
   const workspace = state.workspaces.find((w) => w.id === project?.workspaceId);
   const memberIds = workspace?.memberIds ?? state.users.map((u) => u.id);
   const members = memberIds.map((id) => getUser(id)).filter(Boolean);
 
+  function updateMessages(next) {
+    setMessages(next);
+    saveBoardChat(projectId, next);
+  }
+
   function handleSend(e) {
     e.preventDefault();
     if (!message.trim()) return;
-    setMessages((prev) => [
-      ...prev,
+    updateMessages([
+      ...messages,
       {
         id: crypto.randomUUID(),
-        userId: state.currentUserId ?? 'u1',
+        userId: currentUser.id,
         text: message.trim(),
         createdAt: Date.now(),
       },
     ]);
     setMessage('');
+  }
+
+  function handleReset() {
+    updateMessages([...boardChatSeed]);
   }
 
   return (
@@ -92,7 +95,9 @@ export default function BoardChatPanel({ projectId }) {
           placeholder="write here…"
         />
         <button type="button" className="icon-btn" aria-label="Voice message">🎤</button>
-        <button type="button" className="icon-btn" aria-label="More"><IconMore /></button>
+        <button type="button" className="icon-btn" aria-label="Reset chat" onClick={handleReset}>
+          <IconMore />
+        </button>
       </form>
     </aside>
   );

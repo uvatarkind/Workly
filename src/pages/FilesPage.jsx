@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { addFolder, loadFiles, saveFiles, storagePercent } from '../files';
+import { addFolder, addUploadedFile, loadFiles, saveFiles, storagePercent } from '../files';
 import { IconFolder, IconMore, IconPlus, IconUpload } from '../components/Icons';
 
 const fileTypeLabel = {
@@ -11,8 +11,10 @@ const fileTypeLabel = {
 };
 
 export default function FilesPage() {
-  const { getUser } = useApp();
+  const { getUser, currentUser } = useApp();
   const [data, setData] = useState(loadFiles);
+  const [uploadNote, setUploadNote] = useState('');
+  const fileInputRef = useRef(null);
 
   function persist(next) {
     setData(next);
@@ -23,6 +25,19 @@ export default function FilesPage() {
     const name = window.prompt('Folder name');
     if (!name) return;
     persist(addFolder(data, name));
+  }
+
+  function handleUploadClick() {
+    fileInputRef.current?.click();
+  }
+
+  function handleFileChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    persist(addUploadedFile(data, file, currentUser.id));
+    setUploadNote(`Uploaded ${file.name}`);
+    setTimeout(() => setUploadNote(''), 3000);
+    e.target.value = '';
   }
 
   const percent = storagePercent(data.storage);
@@ -39,12 +54,20 @@ export default function FilesPage() {
             <IconPlus />
             Create New Folder
           </button>
-          <button type="button" className="ghost-btn">
+          <button type="button" className="ghost-btn" onClick={handleUploadClick}>
             <IconUpload />
             Upload
           </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="visually-hidden"
+            onChange={handleFileChange}
+          />
         </div>
       </header>
+
+      {uploadNote && <p className="invite-feedback success">{uploadNote}</p>}
 
       <div className="files-layout">
         <div className="files-main">

@@ -1240,15 +1240,35 @@ h2 { font-size: 17px; font-weight: 600; }
 
 .settings-tabs button.active { color: var(--primary); border-bottom-color: var(--primary); }
 
-.settings-form { display: grid; gap: 16px; max-width: 520px; }
-.settings-form label { display: grid; gap: 8px; font-size: 14px; font-weight: 600; color: var(--black-50); }
-.settings-form input, .settings-form select {
+.settings-form input, .settings-form select, .settings-form textarea {
   font: inherit;
   padding: 10px 12px;
   border: 1px solid var(--black-10);
   border-radius: var(--radius-sm);
   background: var(--page);
 }
+
+.settings-form textarea { resize: vertical; min-height: 96px; }
+
+.settings-team-block + .settings-team-block {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--black-10);
+}
+
+.settings-team-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.settings-team-head h2 { font-size: 16px; margin-bottom: 4px; }
+.settings-team-head p { margin: 0; font-size: 13px; color: var(--neutral); }
+
+.settings-form { display: grid; gap: 16px; max-width: 520px; }
+.settings-form label { display: grid; gap: 8px; font-size: 14px; font-weight: 600; color: var(--black-50); }
 
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .checkbox-label { display: flex !important; align-items: center; gap: 10px; font-weight: 500 !important; }

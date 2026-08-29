@@ -80,7 +80,7 @@ export default function TaskBoardView({ project, tasks, onOpenTask }) {
         </div>
       </div>
 
-      <BoardChatPanel projectId={project.id} />
+      <BoardChatPanel key={project.id} projectId={project.id} />
     </div>
   );
 }
