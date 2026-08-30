@@ -32,11 +32,6 @@ export default function Navbar({ menuOpen, onMenuToggle, onSearchOpen }) {
           <span className="visually-hidden">Menu</span>
         </button>
 
-        <Link to="/dashboard" className="navbar-brand">
-          <span className="logo">W</span>
-          <span className="brand-name">Workly</span>
-        </Link>
-
         <button type="button" className="search" onClick={onSearchOpen}>
           <IconSearch />
           <span className="search-placeholder">Search anything…</span>

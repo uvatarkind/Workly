@@ -182,7 +182,7 @@ export default function TimelinePage() {
 
         <aside className="timeline-insight" aria-label="Completion trend">
           <h2>Complete Task</h2>
-          <Sparkline values={trend} color="#8b7cf6" />
+          <Sparkline values={trend} color="#38b6ff" />
           <div className="timeline-insight-stats">
             {trend.map((value, index) => (
               <span key={index}>{value || '–'}</span>

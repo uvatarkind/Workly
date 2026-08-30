@@ -14,6 +14,13 @@ const svg = (children) => (
   </svg>
 );
 
+export const IconStar = () =>
+  svg(
+    <>
+      <path d="m12 3 2.2 5.2 5.6.5-4.2 3.6 1.3 5.5L12 15.8 7.1 18.8l1.3-5.5-4.2-3.6 5.6-.5L12 3Z" />
+    </>,
+  );
+
 export const IconGrid = () =>
   svg(
     <>
@@ -157,6 +164,62 @@ export const IconFolder = () =>
       <path d="M4 7h6l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z" />
     </>,
   );
+
+export const IconFolderPlus = () =>
+  svg(
+    <>
+      <path d="M4 7h6l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z" />
+      <path d="M12 11v6M9 14h6" strokeWidth="2" />
+    </>,
+  );
+
+export const IconBook = () =>
+  svg(
+    <>
+      <path d="M4 19a2 2 0 0 1 2-2V5a2 2 0 0 1 2-2h5v18H6a2 2 0 0 0-2 2Z" />
+      <path d="M14 3h4a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2h-4V3Z" />
+    </>,
+  );
+
+export const IconSend = () =>
+  svg(
+    <>
+      <path d="m22 2-7 20-4-9-9-4 20-7Z" />
+      <path d="M22 2 11 13" />
+    </>,
+  );
+
+export function WorklyLogo({ size = 44 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 48 48"
+      fill="none"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="workly-logo-grad" x1="8" y1="4" x2="40" y2="44" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#004aad" />
+          <stop stopColor="#38b6ff" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M24 3.5 41 13.2v21.6L24 44.5 7 34.8V13.2L24 3.5Z"
+        fill="url(#workly-logo-grad)"
+      />
+      <path
+        d="M17 16.5 24 13l7 3.5v8L24 28l-7-3.5v-8Z"
+        fill="#fff"
+        opacity="0.95"
+      />
+      <path
+        d="M21 22.5 24 21l3 1.5v3L24 27l-3-1.5v-3Z"
+        fill="#fff"
+      />
+    </svg>
+  );
+}
 
 export const IconUpload = () =>
   svg(

@@ -53,12 +53,22 @@ export function deltaLabel(delta) {
   return 'Same as last week';
 }
 
+export function deltaDisplay(delta) {
+  if (delta > 0) {
+    return { value: `${delta}+`, suffix: 'more', sub: 'from last week', tone: 'up' };
+  }
+  if (delta < 0) {
+    return { value: `${delta}`, suffix: 'fewer', sub: 'than last week', tone: 'down' };
+  }
+  return { value: '0', suffix: 'change', sub: 'from last week', tone: 'neutral' };
+}
+
 export function activitySeries(tasks, range) {
   const origin = startOfDay(new Date());
   const buckets =
     range === 'monthly'
-      ? Array.from({ length: 6 }, (_, index) => {
-          const date = new Date(origin.getFullYear(), origin.getMonth() - (5 - index), 1);
+      ? Array.from({ length: 12 }, (_, index) => {
+          const date = new Date(origin.getFullYear(), origin.getMonth() - (11 - index), 1);
           const end = new Date(date.getFullYear(), date.getMonth() + 1, 1);
           return {
             label: date.toLocaleDateString(undefined, { month: 'short' }),
