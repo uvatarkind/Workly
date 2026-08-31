@@ -22,22 +22,47 @@ function normalizeState(raw) {
     invites: seedInvites,
   };
 
-  if (!raw) return base;
+  if (!raw) {
+    const initial = { ...base };
+    initial.activeWorkspaceId = resolveActiveWorkspaceId(initial);
+    return initial;
+  }
 
   const state = { ...base, ...raw, invites: raw.invites ?? seedInvites };
   state.notifications = (state.notifications ?? []).map((n) => ({
     ...n,
     userId: n.userId ?? 'u1',
   }));
-  state.workspaces = (state.workspaces ?? []).map((w) => ({
-    ...w,
-    memberIds: w.memberIds ?? [],
-  }));
+  state.workspaces = (state.workspaces ?? []).map((w) => {
+    const seed = seedWorkspaces.find((s) => s.id === w.id);
+    const memberIds = seed
+      ? [...new Set([...(w.memberIds ?? []), ...seed.memberIds])]
+      : (w.memberIds ?? []);
+    return {
+      ...w,
+      memberIds,
+      type: w.type ?? seed?.type ?? 'team',
+      icon: w.icon ?? seed?.icon ?? '🏢',
+      name: w.name ?? seed?.name ?? 'Workspace',
+    };
+  });
 
   const existingWsIds = new Set(state.workspaces.map((w) => w.id));
   state.workspaces = [
     ...state.workspaces,
     ...seedWorkspaces.filter((w) => !existingWsIds.has(w.id)),
+  ];
+
+  const existingProjectIds = new Set(state.projects.map((p) => p.id));
+  state.projects = [
+    ...state.projects,
+    ...seedProjects.filter((p) => !existingProjectIds.has(p.id)),
+  ];
+
+  const existingTaskIds = new Set(state.tasks.map((t) => t.id));
+  state.tasks = [
+    ...state.tasks,
+    ...seedTasks.filter((t) => !existingTaskIds.has(t.id)),
   ];
 
   const existingInviteIds = new Set(state.invites.map((i) => i.id));
@@ -52,7 +77,26 @@ function normalizeState(raw) {
     ...seedNotifications.filter((n) => !existingNotifIds.has(n.id)),
   ];
 
+  state.activeWorkspaceId = resolveActiveWorkspaceId(state);
+
   return state;
+}
+
+function resolveActiveWorkspaceId(state) {
+  const myWorkspaces = state.workspaces.filter((w) =>
+    w.memberIds.includes(state.currentUserId),
+  );
+  if (
+    state.activeWorkspaceId &&
+    myWorkspaces.some((w) => w.id === state.activeWorkspaceId)
+  ) {
+    return state.activeWorkspaceId;
+  }
+  return (
+    myWorkspaces.find((w) => w.type === 'team')?.id ??
+    myWorkspaces[0]?.id ??
+    'ws-personal'
+  );
 }
 
 function load() {
@@ -109,6 +153,19 @@ export function getTask(id) {
 
 export function getMyWorkspaces(userId = state.currentUserId) {
   return state.workspaces.filter((w) => w.memberIds.includes(userId));
+}
+
+export function getActiveWorkspace(userId = state.currentUserId) {
+  const id = resolveActiveWorkspaceId({ ...state, currentUserId: userId });
+  return getWorkspace(id);
+}
+
+export function setActiveWorkspace(workspaceId, userId = state.currentUserId) {
+  const workspace = getWorkspace(workspaceId);
+  if (!workspace?.memberIds.includes(userId)) return { error: 'Workspace not found.' };
+  if (state.activeWorkspaceId === workspaceId) return { workspace, unchanged: true };
+  commit({ ...state, activeWorkspaceId: workspaceId });
+  return { workspace };
 }
 
 export function isWorkspaceMember(workspaceId, userId = state.currentUserId) {
@@ -223,6 +280,7 @@ export function acceptWorkspaceInvite(inviteId) {
 
   commit({
     ...state,
+    activeWorkspaceId: workspace.id,
     workspaces: state.workspaces.map((w) =>
       w.id === workspace.id ? { ...w, memberIds } : w,
     ),
@@ -324,14 +382,40 @@ export function addTask(input) {
 }
 
 export function updateTask(id, patch) {
+  const task = getTask(id);
+  if (!task) return;
+
+  const next = { ...patch };
+  if (patch.status === 'done' && task.status !== 'done') {
+    next.completedAt = Date.now();
+  } else if (patch.status && patch.status !== 'done' && task.status === 'done') {
+    next.completedAt = null;
+  }
+
   commit({
     ...state,
-    tasks: state.tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+    tasks: state.tasks.map((t) => (t.id === id ? { ...t, ...next } : t)),
   });
 }
 
 export function deleteTask(id) {
   commit({ ...state, tasks: state.tasks.filter((t) => t.id !== id) });
+}
+
+export function addSubtask(taskId, title) {
+  const task = getTask(taskId);
+  if (!task || !title.trim()) return;
+  const subtask = { id: crypto.randomUUID(), title: title.trim(), done: false };
+  updateTask(taskId, { subtasks: [...task.subtasks, subtask] });
+  return subtask;
+}
+
+export function removeSubtask(taskId, subtaskId) {
+  const task = getTask(taskId);
+  if (!task) return;
+  updateTask(taskId, {
+    subtasks: task.subtasks.filter((s) => s.id !== subtaskId),
+  });
 }
 
 export function toggleSubtask(taskId, subtaskId) {
@@ -372,14 +456,19 @@ export function addProject(input) {
 }
 
 export function addWorkspace(input) {
+  const type = input.type ?? 'team';
   const workspace = {
     id: crypto.randomUUID(),
     name: input.name.trim(),
-    type: input.type ?? 'team',
-    icon: input.icon ?? '🏢',
+    type,
+    icon: input.icon ?? (type === 'personal' ? '👤' : '🏢'),
     memberIds: [state.currentUserId],
   };
-  commit({ ...state, workspaces: [...state.workspaces, workspace] });
+  commit({
+    ...state,
+    workspaces: [...state.workspaces, workspace],
+    activeWorkspaceId: workspace.id,
+  });
   return workspace;
 }
 
@@ -431,10 +520,14 @@ export function clearAllData() {
 
 export function searchAll(query) {
   const needle = query.trim().toLowerCase();
-  if (!needle) return { tasks: [], projects: [], people: [] };
+  if (!needle) return { tasks: [], projects: [], workspaces: [], people: [] };
+  const myWorkspaceIds = new Set(getMyWorkspaces().map((w) => w.id));
   return {
     tasks: state.tasks.filter((t) => t.title.toLowerCase().includes(needle)),
     projects: state.projects.filter((p) => p.name.toLowerCase().includes(needle)),
+    workspaces: state.workspaces.filter(
+      (w) => myWorkspaceIds.has(w.id) && w.name.toLowerCase().includes(needle),
+    ),
     people: state.users.filter((u) => u.name.toLowerCase().includes(needle)),
   };
 }

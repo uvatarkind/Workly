@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { addFolder, addUploadedFile, loadFiles, saveFiles, storagePercent } from '../files';
+import WorkspacePageHeader from '../components/WorkspacePageHeader';
+import { addFolder, loadFiles, saveFiles } from '../files';
+import { useWorkspaceScope } from '../utils/useWorkspaceScope';
 import { IconFolder, IconMore, IconPlus, IconUpload } from '../components/Icons';
-
 const fileTypeLabel = {
   doc: 'DOC',
   image: 'IMG',
@@ -11,11 +12,9 @@ const fileTypeLabel = {
 };
 
 export default function FilesPage() {
-  const { getUser, currentUser } = useApp();
+  const { getUser } = useApp();
+  const { workspace } = useWorkspaceScope();
   const [data, setData] = useState(loadFiles);
-  const [uploadNote, setUploadNote] = useState('');
-  const fileInputRef = useRef(null);
-
   function persist(next) {
     setData(next);
     saveFiles(next);
@@ -27,47 +26,23 @@ export default function FilesPage() {
     persist(addFolder(data, name));
   }
 
-  function handleUploadClick() {
-    fileInputRef.current?.click();
-  }
-
-  function handleFileChange(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    persist(addUploadedFile(data, file, currentUser.id));
-    setUploadNote(`Uploaded ${file.name}`);
-    setTimeout(() => setUploadNote(''), 3000);
-    e.target.value = '';
-  }
-
-  const percent = storagePercent(data.storage);
-
   return (
     <div className="page files-page">
+      <WorkspacePageHeader workspace={workspace} section="Files" />
       <header className="files-head">
         <div>
-          <h1>Files</h1>
-          <p>Organize project assets and shared documents</p>
-        </div>
-        <div className="files-actions">
+          <p>Organize assets and documents for {workspace?.name}</p>
+        </div>        <div className="files-actions">
           <button type="button" className="primary-btn" onClick={handleNewFolder}>
             <IconPlus />
             Create New Folder
           </button>
-          <button type="button" className="ghost-btn" onClick={handleUploadClick}>
+          <button type="button" className="ghost-btn">
             <IconUpload />
             Upload
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="visually-hidden"
-            onChange={handleFileChange}
-          />
         </div>
       </header>
-
-      {uploadNote && <p className="invite-feedback success">{uploadNote}</p>}
 
       <div className="files-layout">
         <div className="files-main">
@@ -153,46 +128,6 @@ export default function FilesPage() {
             </div>
           </section>
         </div>
-
-        <aside className="files-rail">
-          <section className="panel storage-card">
-            <h2>Available Storage</h2>
-            <div className="storage-ring" style={{ '--pct': percent }}>
-              <svg viewBox="0 0 120 120" aria-hidden="true">
-                <circle cx="60" cy="60" r="48" className="ring-bg" />
-                <circle cx="60" cy="60" r="48" className="ring-fill" />
-              </svg>
-              <div className="storage-ring-label">
-                <strong>{percent}%</strong>
-                <span>{data.storage.usedGb}GB / {data.storage.totalGb}GB</span>
-              </div>
-            </div>
-            <ul className="storage-breakdown">
-              {data.storage.breakdown.map((item) => (
-                <li key={item.id}>
-                  <span>{item.label}</span>
-                  <div className="storage-bar">
-                    <span style={{ width: `${item.value}%`, background: item.color }} />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section className="panel activity-card">
-            <h2>Activity Chart</h2>
-            <div className="activity-bars" aria-hidden="true">
-              {[42, 68, 55, 80, 62, 74, 58].map((height, index) => (
-                <span key={index} style={{ height: `${height}%` }} />
-              ))}
-            </div>
-            <ul className="activity-legend">
-              <li><span className="dot media" /> Media</li>
-              <li><span className="dot photos" /> Photos</li>
-              <li><span className="dot docs" /> Docs</li>
-            </ul>
-          </section>
-        </aside>
       </div>
     </div>
   );

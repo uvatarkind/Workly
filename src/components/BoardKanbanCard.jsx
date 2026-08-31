@@ -1,6 +1,7 @@
 import { isOverdue } from '../utils/dates';
-import { coverVariant, subtaskProgress, taskTag, taskTagTone } from '../utils/board';
-import { IconMore, IconPaperclip } from './Icons';
+import { coverVariant, subtaskProgress } from '../utils/board';
+import { LABEL_COLORS } from '../data/constants';
+import { IconCheck, IconMessage } from './Icons';
 
 function formatDueDate(value) {
   if (!value) return '';
@@ -13,25 +14,30 @@ function formatDueDate(value) {
 }
 
 export default function BoardKanbanCard({ task, assignee, onOpen, onMove, columns, currentColumn }) {
-  const tone = taskTagTone(task);
-  const tag = taskTag(task);
-  const showCover = task.status !== 'todo' || task.priority !== 'low';
+  const showCover = task.status === 'in_progress';
   const comments = task.comments?.length ?? 0;
-  const files = task.labels?.length > 1 ? task.labels.length : Math.floor(task.title.length % 12);
+  const progress = subtaskProgress(task);
+  const labels = task.labels?.slice(0, 3) ?? [];
 
   return (
     <article className={`kanban-card board-card${task.status === 'done' ? ' done' : ''}`}>
       {showCover && <div className={`kanban-cover ${coverVariant(task.id)}`} aria-hidden="true" />}
       <div className="kanban-card-body">
-        <div className="kanban-card-top">
-          <span className={`kanban-tag tag-${tone}`}>{tag}</span>
-          <button type="button" className="icon-btn kanban-more" aria-label="More options">
-            <IconMore />
-          </button>
-        </div>
+        {labels.length > 0 && (
+          <div className="kanban-card-labels">
+            {labels.map((label) => (
+              <span
+                key={label}
+                className={`kanban-label tag-${LABEL_COLORS[label] ?? 'design'}`}
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+        )}
         <button type="button" className="board-card-click" onClick={() => onOpen(task.id)}>
           <h3>{task.title}</h3>
-          <p>{task.description || 'Track progress and keep this task moving.'}</p>
+          {task.description && <p>{task.description}</p>}
         </button>
         {task.dueDate && (
           <time
@@ -48,12 +54,16 @@ export default function BoardKanbanCard({ task, assignee, onOpen, onMove, column
             )}
           </div>
           <div className="kanban-meta">
-            <span className="kanban-progress">{subtaskProgress(task)} done</span>
-            {comments > 0 && <span className="kanban-comments">{comments} Comment</span>}
-            {files > 0 && (
-              <span className="kanban-files">
-                <IconPaperclip />
-                {files} file
+            {progress && (
+              <span className="kanban-checklist">
+                <IconCheck />
+                {progress}
+              </span>
+            )}
+            {comments > 0 && (
+              <span className="kanban-comments">
+                <IconMessage />
+                {comments} Comment
               </span>
             )}
           </div>

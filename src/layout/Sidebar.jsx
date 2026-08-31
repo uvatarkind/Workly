@@ -1,75 +1,135 @@
-import { NavLink } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  IconBell,
   IconCalendar,
   IconFolder,
+  IconFolderPlus,
   IconGrid,
-  IconList,
+  IconLayers,
   IconPlus,
+  IconSend,
   IconSettings,
-  IconTimeline,
 } from '../components/Icons';
 import { useApp } from '../context/AppContext';
+import { useRouteWorkspaceId } from '../utils/useRouteWorkspaceId';
+import { workspaceSectionPath } from '../utils/useWorkspaceScope';
+import logo from '../assets/logo.png';
 
 const mainNav = [
-  { to: '/dashboard', icon: IconGrid, label: 'Dashboard', end: true },
-  { to: '/timeline', icon: IconTimeline, label: 'Timeline' },
-  { to: '/calendar', icon: IconCalendar, label: 'Calendar' },
-  { to: '/project/p1', icon: IconList, label: 'Board' },
-  { to: '/files', icon: IconFolder, label: 'Files' },
-  { to: '/settings', icon: IconSettings, label: 'Settings' },
-  { to: '/notifications', icon: IconBell, label: 'Notifications' },
+  { section: 'dashboard', icon: IconGrid, label: 'Dashboard' },
+  { section: 'projects', icon: IconFolder, label: 'Projects' },
+  { section: 'timeline', icon: IconLayers, label: 'Timeline' },
+  { section: 'calendar', icon: IconCalendar, label: 'Calendar' },
+  { section: 'settings', icon: IconSettings, label: 'Settings' },
+  { section: 'notifications', icon: IconSend, label: 'Notifications' },
+  { section: 'files', icon: IconFolderPlus, label: 'Files' },
 ];
 
-export default function Sidebar({ open, onNavigate }) {
-  const { myNotifications } = useApp();
+export default function Sidebar({ open, onNavigate, onCreateWorkspace }) {
+  const { myNotifications, myWorkspaces, activeWorkspace, setActiveWorkspace } = useApp();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const wsId = useRouteWorkspaceId();
   const unread = myNotifications.filter((n) => !n.read).length;
 
-  function handleClick() {
+  function closeMenu() {
     onNavigate?.();
+  }
+
+  function goToSection(section) {
+    const target = workspaceSectionPath(wsId, section);
+    if (location.pathname !== target && !location.pathname.startsWith(`${target}/`)) {
+      navigate(target);
+    }
+    closeMenu();
+  }
+
+  function selectWorkspace(workspace) {
+    setActiveWorkspace(workspace.id);
+    navigate(workspaceSectionPath(workspace.id, 'dashboard'));
+    closeMenu();
+  }
+
+  function isSectionActive(section) {
+    const base = workspaceSectionPath(wsId, section);
+    if (section === 'projects') {
+      return location.pathname.startsWith(`/w/${wsId}/projects`);
+    }
+    return location.pathname === base;
   }
 
   return (
     <aside id="app-sidebar" className={open ? 'open' : undefined}>
+      <button
+        type="button"
+        className="sidebar-brand sidebar-brand-btn"
+        onClick={() => goToSection('dashboard')}
+      >
+        <img src={logo} alt="Workly" className="sidebar-logo" width={44} height={44} />
+        <span className="sidebar-brand-name">Workly.</span>
+      </button>
+
+      <div className="sidebar-workspaces">
+        <div className="sidebar-workspaces-head">
+          <span className="sidebar-workspaces-label">Workspaces</span>
+          <button
+            type="button"
+            className="sidebar-workspaces-add"
+            aria-label="New workspace"
+            onClick={onCreateWorkspace}
+          >
+            <IconPlus />
+          </button>
+        </div>
+        <ul className="sidebar-workspace-list">
+          {myWorkspaces.map((workspace) => {
+            const active = workspace.id === activeWorkspace?.id;
+            return (
+              <li key={workspace.id}>
+                <button
+                  type="button"
+                  className={active ? 'sidebar-workspace-item active' : 'sidebar-workspace-item'}
+                  onClick={() => selectWorkspace(workspace)}
+                >
+                  <span className="sidebar-workspace-icon" aria-hidden="true">{workspace.icon}</span>
+                  <span className="sidebar-workspace-text">
+                    <span className="sidebar-workspace-name">{workspace.name}</span>
+                    <span className="sidebar-workspace-type">
+                      {workspace.type === 'personal' ? 'Personal' : 'Team'}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
       <nav className="sidebar-icons" aria-label="Main">
         <ul>
           {mainNav.map((item) => {
             const Icon = item.icon;
+            const active = isSectionActive(item.section);
             return (
               <li key={item.label}>
-                <NavLink
-                  to={item.to}
-                  end={item.end}
-                  className="sidebar-icon-btn"
-                  title={item.label}
-                  onClick={handleClick}
+                <button
+                  type="button"
+                  className={active ? 'sidebar-icon-btn active' : 'sidebar-icon-btn'}
+                  aria-current={active ? 'page' : undefined}
+                  onClick={() => goToSection(item.section)}
                 >
-                  <Icon />
+                  <span className="sidebar-icon-wrap">
+                    <Icon />
+                    {item.label === 'Notifications' && unread > 0 && (
+                      <span className="sidebar-notify-dot">{unread}</span>
+                    )}
+                  </span>
                   <span className="nav-text">{item.label}</span>
-                  {item.label === 'Notifications' && unread > 0 && (
-                    <span className="sidebar-notify-dot">{unread}</span>
-                  )}
-                </NavLink>
+                </button>
               </li>
             );
           })}
         </ul>
       </nav>
-
-      <div className="sidebar-footer">
-        <button
-          type="button"
-          className="sidebar-icon-btn create-icon-btn"
-          title="Create"
-          onClick={() => {
-            handleClick();
-            window.dispatchEvent(new CustomEvent('workly:create'));
-          }}
-        >
-          <IconPlus />
-          <span className="nav-text">Create</span>
-        </button>
-      </div>
     </aside>
   );
 }

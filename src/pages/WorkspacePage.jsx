@@ -20,13 +20,24 @@ export default function WorkspacePage() {
   return (
     <WorkspaceAccess workspaceId={id}>
     <div className="page">
-      <header className="page-header">
-        <h1>{workspace.icon} {workspace.name}</h1>
-        <p>
-          {workspace.type === 'personal'
-            ? 'Your personal workspace for individual work.'
-            : 'Team workspace for collaborative projects.'}
-        </p>
+      <header className="page-header split">
+        <div>
+          <h1>{workspace.icon} {workspace.name}</h1>
+          <p>
+            <span className={workspace.type === 'personal' ? 'workspace-badge personal' : 'workspace-badge team'}>
+              {workspace.type === 'personal' ? 'Personal space' : 'Team workspace'}
+            </span>
+            {' — '}
+            {workspace.type === 'personal'
+              ? 'Your private workspace for individual work.'
+              : 'Collaborate with your team on shared projects.'}
+          </p>
+        </div>
+        <div className="workspace-quick-nav">
+          <Link to={`/w/${id}/dashboard`} className="ghost-btn small">Dashboard</Link>
+          <Link to={`/workspace/${id}/projects`} className="ghost-btn small">Projects</Link>
+          <Link to={`/w/${id}/tasks`} className="ghost-btn small">Tasks</Link>
+        </div>
       </header>
 
       <div className="workspace-overview">
@@ -46,6 +57,9 @@ export default function WorkspacePage() {
                     {project.dueDate && <span>Due {project.dueDate}</span>}
                   </div>
                 </Link>
+                <Link to={`/w/${id}/tasks/${project.id}`} className="project-card-board-link">
+                  Open task board →
+                </Link>
               </li>
             ))}
           </ul>
@@ -54,7 +68,7 @@ export default function WorkspacePage() {
         <section className="panel">
           <div className="panel-head split">
             <h2>Open Tasks</h2>
-            <Link to={`/workspace/${id}/tasks`} className="ghost-btn small">View all</Link>
+            <Link to={`/w/${id}/tasks`} className="ghost-btn small">View all</Link>
           </div>
           <ul className="simple-task-list">
             {tasks.slice(0, 6).map((task) => (

@@ -1,3 +1,5 @@
+import { todayStamp } from './dates';
+
 export const TAG_TONES = {
   Design: 'design',
   Research: 'research',
@@ -33,7 +35,10 @@ export const BOARD_COLUMNS = [
     id: 'todo',
     label: 'To Do',
     match: (t) => t.status === 'todo' && Boolean(t.dueDate),
-    toStatus: () => ({ status: 'todo', dueDate: new Date().toISOString().slice(0, 10) }),
+    toStatus: (task) => ({
+      status: 'todo',
+      dueDate: task?.dueDate || todayStamp(),
+    }),
   },
   {
     id: 'in_progress',
@@ -47,14 +52,21 @@ export const BOARD_COLUMNS = [
     match: (t) => t.status === 'in_review',
     toStatus: () => ({ status: 'in_review' }),
   },
+  {
+    id: 'done',
+    label: 'Done',
+    match: (t) => t.status === 'done',
+    toStatus: () => ({ status: 'done' }),
+  },
 ];
 
 export function columnForTask(task) {
+  if (task.status === 'done') return 'done';
   return BOARD_COLUMNS.find((col) => col.match(task))?.id ?? 'backlog';
 }
 
 export function subtaskProgress(task) {
-  if (!task.subtasks?.length) return task.status === 'done' ? '1/1' : '0/1';
+  if (!task.subtasks?.length) return null;
   const done = task.subtasks.filter((s) => s.done).length;
   return `${done}/${task.subtasks.length}`;
 }

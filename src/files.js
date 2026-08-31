@@ -21,8 +21,8 @@ export const defaultFiles = {
     usedGb: 2.1,
     totalGb: 15,
     breakdown: [
-      { id: 'media', label: 'Media', value: 45, color: '#4c6fff' },
-      { id: 'docs', label: 'Documents', value: 28, color: '#8b7cf6' },
+      { id: 'media', label: 'Media', value: 45, color: '#004aad' },
+      { id: 'docs', label: 'Documents', value: 28, color: '#38b6ff' },
       { id: 'music', label: 'Music', value: 12, color: '#ffa726' },
       { id: 'other', label: 'Other File', value: 15, color: '#00b884' },
     ],

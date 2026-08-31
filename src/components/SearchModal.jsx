@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { projectPath, workspacePath } from '../utils/routes';
 import { IconSearch, IconX } from './Icons';
 
 export default function SearchModal({ onClose, onOpenTask }) {
@@ -57,8 +58,22 @@ export default function SearchModal({ onClose, onOpenTask }) {
                 <ul>
                   {results.projects.map((project) => (
                     <li key={project.id}>
-                      <button type="button" onClick={() => { navigate(`/project/${project.id}`); onClose(); }}>
+                      <button type="button" onClick={() => { navigate(projectPath(project.workspaceId, project.id)); onClose(); }}>
                         {project.name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            {results.workspaces.length > 0 && (
+              <section>
+                <h3>Workspaces</h3>
+                <ul>
+                  {results.workspaces.map((workspace) => (
+                    <li key={workspace.id}>
+                      <button type="button" onClick={() => { navigate(workspacePath(workspace.id, 'dashboard')); onClose(); }}>
+                        {workspace.icon} {workspace.name}
                       </button>
                     </li>
                   ))}
@@ -78,7 +93,7 @@ export default function SearchModal({ onClose, onOpenTask }) {
                 </ul>
               </section>
             )}
-            {!results.tasks.length && !results.projects.length && !results.people.length && (
+            {!results.tasks.length && !results.projects.length && !results.workspaces.length && !results.people.length && (
               <p className="empty-state">No results for "{query}"</p>
             )}
           </div>

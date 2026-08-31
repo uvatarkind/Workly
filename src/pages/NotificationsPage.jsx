@@ -1,5 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import WorkspacePageHeader from '../components/WorkspacePageHeader';
+import { workspacePath } from '../utils/routes';
+import { useWorkspaceScope } from '../utils/useWorkspaceScope';
 
 function timeAgo(ts) {
   const diff = Date.now() - ts;
@@ -18,8 +21,12 @@ const ICONS = {
   workspace_joined: '🎉',
 };
 
+const TASK_TYPES = new Set(['assignment', 'comment', 'due', 'mention']);
+
 export default function NotificationsPage() {
   const navigate = useNavigate();
+  const { openTask } = useOutletContext();
+  const { workspace } = useWorkspaceScope();
   const {
     myNotifications,
     markNotificationRead,
@@ -34,15 +41,28 @@ export default function NotificationsPage() {
   function handleAccept(inviteId, workspaceId) {
     const result = acceptWorkspaceInvite(inviteId);
     if (!result.error && workspaceId) {
-      navigate(`/workspace/${workspaceId}`);
+      navigate(workspacePath(workspaceId, 'dashboard'));
+    }
+  }
+
+  function handleNotificationClick(notification) {
+    if (notification.taskId && TASK_TYPES.has(notification.type)) {
+      openTask(notification.taskId);
+      if (!notification.read) markNotificationRead(notification.id);
+      return;
+    }
+
+    if (notification.type === 'workspace_joined' && notification.workspaceId) {
+      navigate(workspacePath(notification.workspaceId, 'dashboard'));
+      if (!notification.read) markNotificationRead(notification.id);
     }
   }
 
   return (
     <div className="page">
+      <WorkspacePageHeader workspace={workspace} section="Notifications" />
       <header className="page-header split">
         <div>
-          <h1>Notifications</h1>
           <p>{unread > 0 ? `${unread} unread` : 'All caught up'}</p>
         </div>
         {unread > 0 && (
@@ -59,11 +79,26 @@ export default function NotificationsPage() {
           <ul className="notification-list">
             {myNotifications.map((n) => {
               const workspace = n.workspaceId ? getWorkspace(n.workspaceId) : null;
+              const isClickable = Boolean(
+                (n.taskId && TASK_TYPES.has(n.type)) ||
+                (n.type === 'workspace_joined' && n.workspaceId),
+              );
+
               return (
                 <li key={n.id} className={n.read ? 'read' : 'unread'}>
                   <span className="notification-icon">{ICONS[n.type] ?? '🔔'}</span>
                   <div className="notification-body">
-                    <p>{n.message}</p>
+                    {isClickable ? (
+                      <button
+                        type="button"
+                        className="notification-link"
+                        onClick={() => handleNotificationClick(n)}
+                      >
+                        {n.message}
+                      </button>
+                    ) : (
+                      <p>{n.message}</p>
+                    )}
                     {workspace && n.type === 'workspace_invite' && (
                       <span className="notification-meta">{workspace.icon} {workspace.name}</span>
                     )}

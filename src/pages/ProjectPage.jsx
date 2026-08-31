@@ -1,52 +1,76 @@
 import { useState } from 'react';
-import { Link, useParams, useOutletContext } from 'react-router-dom';
+import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { formatDateLong } from '../utils/dates';
+import { openCreate, projectPath, projectsPath } from '../utils/routes';
+import { useWorkspaceScope } from '../utils/useWorkspaceScope';
 import TaskBoardView from '../components/TaskBoardView';
 import ProjectList from '../components/ProjectList';
 import ProjectCalendar from '../components/ProjectCalendar';
+import { IconChevronLeft, IconPlus } from '../components/Icons';
 
 const TABS = [
-  { id: 'overview', label: 'Overview' },
   { id: 'board', label: 'Board' },
   { id: 'list', label: 'List' },
   { id: 'calendar', label: 'Calendar' },
 ];
 
 export default function ProjectPage() {
-  const { id } = useParams();
+  const { workspaceId, projectId } = useParams();
+  const navigate = useNavigate();
   const { openTask } = useOutletContext();
   const [tab, setTab] = useState('board');
-  const { getProject, getTasksByProject, getUser, getWorkspace, projectProgress } = useApp();
+  const { workspace, projects } = useWorkspaceScope();
+  const { getProject, getTasksByProject, getWorkspace } = useApp();
 
-  const project = getProject(id);
-  if (!project) return <p className="empty-state">Project not found.</p>;
+  const project = getProject(projectId);
+  const ws = getWorkspace(workspaceId);
 
-  const tasks = getTasksByProject(id);
-  const manager = getUser(project.managerId);
-  const workspace = getWorkspace(project.workspaceId);
-  const progress = projectProgress(id);
+  if (!project || !ws || project.workspaceId !== workspaceId) {
+    return (
+      <div className="page project-page">
+        <p className="empty-state">Project not found in this workspace.</p>
+        <Link to={projectsPath(workspaceId)} className="ghost-btn">Back to projects</Link>
+      </div>
+    );
+  }
 
-  const counts = {
-    total: tasks.length,
-    done: tasks.filter((t) => t.status === 'done').length,
-    inProgress: tasks.filter((t) => t.status === 'in_progress').length,
-    todo: tasks.filter((t) => t.status === 'todo').length,
-  };
+  const tasks = getTasksByProject(projectId);
+
+  function handleProjectChange(nextProjectId) {
+    if (nextProjectId && nextProjectId !== projectId) {
+      navigate(projectPath(workspaceId, nextProjectId));
+    }
+  }
 
   return (
     <div className="page project-page">
-      <header className="page-header">
-        <p className="breadcrumb">
-          <Link to={`/workspace/${project.workspaceId}/projects`}>{workspace?.name}</Link>
-          <span>/</span>
-          <span>{project.name}</span>
-        </p>
-        <h1>{project.name}</h1>
-        <div className="project-meta">
-          <span>Project Manager: <strong>{manager?.name}</strong></span>
-          {project.dueDate && <span>Due: <strong>{formatDateLong(project.dueDate)}</strong></span>}
-          <span>Progress: <strong>{progress}%</strong></span>
+      <header className="project-toolbar">
+        <Link to={projectsPath(workspaceId)} className="project-back-btn" aria-label="Back to projects">
+          <IconChevronLeft />
+        </Link>
+
+        <div className="project-toolbar-actions">
+          <label className="project-switcher-wrap">
+            <span className="visually-hidden">Switch project</span>
+            <select
+              className="project-switcher"
+              value={projectId}
+              onChange={(e) => handleProjectChange(e.target.value)}
+            >
+              {projects.map((item) => (
+                <option key={item.id} value={item.id}>{item.name}</option>
+              ))}
+            </select>
+          </label>
+
+          <button
+            type="button"
+            className="primary-btn small"
+            onClick={() => openCreate({ mode: 'task', workspaceId, projectId })}
+          >
+            <IconPlus />
+            Add task
+          </button>
         </div>
       </header>
 
@@ -63,33 +87,13 @@ export default function ProjectPage() {
         ))}
       </div>
 
-      {tab === 'overview' && (
-        <div className="project-overview">
-          <section className="panel">
-            <h2>Progress</h2>
-            <div className="progress-bar large">
-              <div className="progress-fill" style={{ width: `${progress}%` }} />
-            </div>
-            <p className="progress-label">{progress}% complete</p>
-          </section>
-          <section className="panel">
-            <h2>Tasks</h2>
-            <ul className="task-stats">
-              <li><strong>{counts.total}</strong> total</li>
-              <li><strong>{counts.done}</strong> completed</li>
-              <li><strong>{counts.inProgress}</strong> in progress</li>
-              <li><strong>{counts.todo}</strong> todo</li>
-            </ul>
-          </section>
-          <section className="panel">
-            <h2>Description</h2>
-            <p>{project.description}</p>
-          </section>
-        </div>
-      )}
-
       {tab === 'board' && (
-        <TaskBoardView project={project} tasks={tasks} onOpenTask={openTask} />
+        <TaskBoardView
+          project={project}
+          workspace={workspace}
+          tasks={tasks}
+          onOpenTask={openTask}
+        />
       )}
 
       {tab === 'list' && (
