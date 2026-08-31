@@ -4279,6 +4279,19 @@ main:has(.tasks-page) {
   }
 
   .dashboard-grid .span-2 { grid-column: span 1; }
+
+  .kanban-board.mockup-board {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    gap: 16px;
+  }
+
+  .mockup-board .kanban-column {
+    width: 100%;
+    min-width: 0;
+  }
+
   .kanban-board { grid-template-columns: repeat(5, minmax(200px, 240px)); }
 
   main:has(.tasks-page) {
@@ -4300,16 +4313,16 @@ main:has(.tasks-page) {
 
   .tasks-page .kanban-board.mockup-board {
     display: flex;
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: visible;
+    flex-direction: column;
+    overflow: visible;
     max-height: none;
-    gap: 10px;
+    gap: 16px;
   }
 
   .tasks-page .mockup-board .kanban-column {
-    flex: 0 0 220px;
-    min-width: 220px;
+    flex: none;
+    width: 100%;
+    min-width: 0;
   }
 
   .files-layout { grid-template-columns: 1fr; }
@@ -4465,6 +4478,160 @@ main:has(.tasks-page) {
   .ws-switcher-trigger-text strong,
   .ws-switcher-type { max-width: 88px; }
   .ws-switcher-trigger { max-width: 180px; }
+
+  /* Project tasks — vertical stack on mobile instead of cramped columns */
+  main:has(.project-page),
+  main:has(.tasks-page) {
+    overflow-y: auto;
+    display: block;
+  }
+
+  .project-page .view-tabs,
+  .tasks-page .view-tabs {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .project-page .view-tabs::-webkit-scrollbar,
+  .tasks-page .view-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .kanban-board.mockup-board,
+  .tasks-page .kanban-board.mockup-board {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    gap: 20px;
+    padding-bottom: 12px;
+  }
+
+  .mockup-board .kanban-column,
+  .tasks-page .mockup-board .kanban-column {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mockup-board .kanban-column-head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .mockup-board .board-card-click h3 {
+    font-size: 14px;
+    -webkit-line-clamp: 3;
+  }
+
+  .mockup-board .kanban-card-foot {
+    margin-top: 8px;
+  }
+
+  .task-board-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .task-board-members {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .project-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .project-toolbar-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .project-switcher {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .project-toolbar-actions .primary-btn.small {
+    flex-shrink: 0;
+  }
+
+  /* List view — vertical task cards */
+  .table-wrap {
+    overflow-x: visible;
+  }
+
+  .task-table thead {
+    display: none;
+  }
+
+  .task-table tbody,
+  .task-table tr,
+  .task-table td {
+    display: block;
+  }
+
+  .task-table tr {
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid var(--panel-outline);
+    border-radius: var(--radius-sm);
+    background: var(--base);
+    box-shadow: var(--card-shadow);
+  }
+
+  .task-table tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .task-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 0;
+  }
+
+  .task-table td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--neutral);
+    flex-shrink: 0;
+  }
+
+  .task-table td:first-child {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding-top: 0;
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--black-10);
+  }
+
+  .task-table td:first-child::before {
+    display: none;
+  }
+
+  .task-table td:first-child .link-btn {
+    font-size: 15px;
+    font-weight: 700;
+    text-align: left;
+    white-space: normal;
+  }
+
+  .task-table td:last-child {
+    padding-bottom: 0;
+  }
 }
 
 /* Projects-first flow */

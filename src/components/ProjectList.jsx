@@ -23,26 +23,26 @@ export default function ProjectList({ tasks, onOpenTask }) {
               const assignee = getUser(task.assigneeId);
               return (
                 <tr key={task.id}>
-                  <td>
+                  <td data-label="Task">
                     <button type="button" className="link-btn" onClick={() => onOpenTask(task.id)}>
                       {task.title}
                     </button>
                   </td>
-                  <td>
+                  <td data-label="Assignee">
                     <span className="assignee-cell">
                       <span className="member-avatar tiny">{assignee?.initials}</span>
                       {assignee?.name}
                     </span>
                   </td>
-                  <td className={isOverdue(task) ? 'overdue' : undefined}>
+                  <td data-label="Due" className={isOverdue(task) ? 'overdue' : undefined}>
                     {task.dueDate ? formatDate(task.dueDate) : '—'}
                   </td>
-                  <td>
+                  <td data-label="Priority">
                     <span className={`priority-badge priority-${task.priority}`}>
                       {PRIORITY_LABELS[task.priority]}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Status">
                     <span className={`status-badge status-${task.status}`}>
                       {STATUS_LABELS[task.status]}
                     </span>
