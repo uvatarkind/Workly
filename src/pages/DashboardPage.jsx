@@ -12,6 +12,7 @@ import {
   weekDelta,
 } from '../utils/analytics';
 import { workspaceSectionPath } from '../utils/routes';
+import { useWorkspaceScope } from '../utils/useWorkspaceScope';
 
 export default function DashboardPage() {
   const {
