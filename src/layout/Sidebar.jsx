@@ -1,72 +1,121 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  IconBook,
+  IconCalendar,
+  IconFolder,
   IconFolderPlus,
   IconGrid,
   IconLayers,
+  IconPlus,
   IconSend,
   IconSettings,
 } from '../components/Icons';
 import { useApp } from '../context/AppContext';
+import { useRouteWorkspaceId } from '../utils/useRouteWorkspaceId';
+import { workspaceSectionPath } from '../utils/useWorkspaceScope';
 import logo from '../assets/logo.png';
 
 const mainNav = [
-  { to: '/dashboard', icon: IconGrid, label: 'Dashboard', end: true },
-  { to: '/timeline', icon: IconLayers, label: 'Timeline' },
-  { to: '/calendar', icon: IconBook, label: 'Calendar' },
-  { to: '/settings', icon: IconSettings, label: 'Settings' },
-  { to: '/notifications', icon: IconSend, label: 'Notifications' },
-  { to: '/files', icon: IconFolderPlus, label: 'Files' },
+  { section: 'dashboard', icon: IconGrid, label: 'Dashboard' },
+  { section: 'projects', icon: IconFolder, label: 'Projects' },
+  { section: 'timeline', icon: IconLayers, label: 'Timeline' },
+  { section: 'calendar', icon: IconCalendar, label: 'Calendar' },
+  { section: 'settings', icon: IconSettings, label: 'Settings' },
+  { section: 'notifications', icon: IconSend, label: 'Notifications' },
+  { section: 'files', icon: IconFolderPlus, label: 'Files' },
 ];
 
-export default function Sidebar({ open, onNavigate }) {
-  const { myNotifications } = useApp();
+export default function Sidebar({ open, onNavigate, onCreateWorkspace }) {
+  const { myNotifications, myWorkspaces, activeWorkspace, setActiveWorkspace } = useApp();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const wsId = useRouteWorkspaceId();
   const unread = myNotifications.filter((n) => !n.read).length;
-  const [tooltip, setTooltip] = useState(null);
 
-  function handleClick() {
+  function closeMenu() {
     onNavigate?.();
   }
 
-  function showTooltip(event, label) {
-    if (window.matchMedia('(max-width: 800px)').matches) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    setTooltip({
-      label,
-      top: rect.top - 4,
-      left: rect.right + 2,
-    });
+  function goToSection(section) {
+    const target = workspaceSectionPath(wsId, section);
+    if (location.pathname !== target && !location.pathname.startsWith(`${target}/`)) {
+      navigate(target);
+    }
+    closeMenu();
   }
 
-  function hideTooltip() {
-    setTooltip(null);
+  function selectWorkspace(workspace) {
+    setActiveWorkspace(workspace.id);
+    navigate(workspaceSectionPath(workspace.id, 'dashboard'));
+    closeMenu();
+  }
+
+  function isSectionActive(section) {
+    const base = workspaceSectionPath(wsId, section);
+    if (section === 'projects') {
+      return location.pathname.startsWith(`/w/${wsId}/projects`);
+    }
+    return location.pathname === base;
   }
 
   return (
     <aside id="app-sidebar" className={open ? 'open' : undefined}>
-      <NavLink to="/dashboard" className="sidebar-brand" onClick={handleClick}>
+      <button
+        type="button"
+        className="sidebar-brand sidebar-brand-btn"
+        onClick={() => goToSection('dashboard')}
+      >
         <img src={logo} alt="Workly" className="sidebar-logo" width={44} height={44} />
         <span className="sidebar-brand-name">Workly.</span>
-      </NavLink>
+      </button>
+
+      <div className="sidebar-workspaces">
+        <div className="sidebar-workspaces-head">
+          <span className="sidebar-workspaces-label">Workspaces</span>
+          <button
+            type="button"
+            className="sidebar-workspaces-add"
+            aria-label="New workspace"
+            onClick={onCreateWorkspace}
+          >
+            <IconPlus />
+          </button>
+        </div>
+        <ul className="sidebar-workspace-list">
+          {myWorkspaces.map((workspace) => {
+            const active = workspace.id === activeWorkspace?.id;
+            return (
+              <li key={workspace.id}>
+                <button
+                  type="button"
+                  className={active ? 'sidebar-workspace-item active' : 'sidebar-workspace-item'}
+                  onClick={() => selectWorkspace(workspace)}
+                >
+                  <span className="sidebar-workspace-icon" aria-hidden="true">{workspace.icon}</span>
+                  <span className="sidebar-workspace-text">
+                    <span className="sidebar-workspace-name">{workspace.name}</span>
+                    <span className="sidebar-workspace-type">
+                      {workspace.type === 'personal' ? 'Personal' : 'Team'}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
 
       <nav className="sidebar-icons" aria-label="Main">
         <ul>
           {mainNav.map((item) => {
             const Icon = item.icon;
+            const active = isSectionActive(item.section);
             return (
               <li key={item.label}>
-                <NavLink
-                  to={item.to}
-                  end={item.end}
-                  className={({ isActive }) =>
-                    isActive ? 'sidebar-icon-btn active' : 'sidebar-icon-btn'
-                  }
-                  onClick={handleClick}
-                  onMouseEnter={(e) => showTooltip(e, item.label)}
-                  onMouseLeave={hideTooltip}
-                  onFocus={(e) => showTooltip(e, item.label)}
-                  onBlur={hideTooltip}
+                <button
+                  type="button"
+                  className={active ? 'sidebar-icon-btn active' : 'sidebar-icon-btn'}
+                  aria-current={active ? 'page' : undefined}
+                  onClick={() => goToSection(item.section)}
                 >
                   <span className="sidebar-icon-wrap">
                     <Icon />
@@ -75,22 +124,12 @@ export default function Sidebar({ open, onNavigate }) {
                     )}
                   </span>
                   <span className="nav-text">{item.label}</span>
-                </NavLink>
+                </button>
               </li>
             );
           })}
         </ul>
       </nav>
-
-      {tooltip && (
-        <div
-          className="sidebar-tooltip"
-          style={{ top: `${tooltip.top}px`, left: `${tooltip.left}px` }}
-          role="tooltip"
-        >
-          {tooltip.label}
-        </div>
-      )}
     </aside>
   );
 }

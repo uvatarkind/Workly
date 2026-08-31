@@ -14,6 +14,7 @@ export function AppProvider({ children }) {
       state,
       currentUser: store.getCurrentUser(),
       myWorkspaces: store.getMyWorkspaces(),
+      activeWorkspace: store.getActiveWorkspace(),
       myNotifications: store.getMyNotifications(),
       refresh,
       getUser: store.getUser,
@@ -25,6 +26,15 @@ export function AppProvider({ children }) {
       getTasksByWorkspace: store.getTasksByWorkspace,
       getMyTasks: store.getMyTasks,
       getMyWorkspaces: store.getMyWorkspaces,
+      getActiveWorkspace: store.getActiveWorkspace,
+      setActiveWorkspace: (...args) => {
+        const before = store.getActiveWorkspace()?.id;
+        const result = store.setActiveWorkspace(...args);
+        if (!result.error && !result.unchanged && result.workspace?.id !== before) {
+          refresh();
+        }
+        return result;
+      },
       getMyNotifications: store.getMyNotifications,
       getPendingInvitesForUser: store.getPendingInvitesForUser,
       getWorkspaceInvites: store.getWorkspaceInvites,
@@ -34,6 +44,8 @@ export function AppProvider({ children }) {
       updateTask: (...args) => { store.updateTask(...args); refresh(); },
       deleteTask: (...args) => { store.deleteTask(...args); refresh(); },
       toggleSubtask: (...args) => { store.toggleSubtask(...args); refresh(); },
+      addSubtask: (...args) => { store.addSubtask(...args); refresh(); },
+      removeSubtask: (...args) => { store.removeSubtask(...args); refresh(); },
       addComment: (...args) => { store.addComment(...args); refresh(); },
       addProject: (...args) => { const r = store.addProject(...args); refresh(); return r; },
       addWorkspace: (...args) => { const r = store.addWorkspace(...args); refresh(); return r; },

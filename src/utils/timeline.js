@@ -19,12 +19,12 @@ const categoryLabels = {
 };
 
 const categoryTones = {
-  Design: 'design',
-  Research: 'research',
-  Planning: 'planning',
-  Development: 'content',
-  Marketing: 'planning',
-  Mobile: 'design',
+  Design: 'purple',
+  Research: 'blue',
+  Planning: 'orange',
+  Development: 'green',
+  Marketing: 'orange',
+  Mobile: 'purple',
 };
 
 export function parseStamp(stamp) {

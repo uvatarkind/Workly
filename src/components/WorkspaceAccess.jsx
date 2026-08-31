@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useSyncActiveWorkspace } from '../utils/useSyncActiveWorkspace';
 
 export default function WorkspaceAccess({ workspaceId, children }) {
   const {
@@ -8,6 +9,8 @@ export default function WorkspaceAccess({ workspaceId, children }) {
     getPendingInvitesForUser,
     acceptWorkspaceInvite,
   } = useApp();
+
+  useSyncActiveWorkspace(workspaceId);
 
   const workspace = getWorkspace(workspaceId);
   if (!workspace) {

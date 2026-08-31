@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useWorkspaceScope } from '../utils/useWorkspaceScope';
 import { getTheme, setTheme as applyTheme } from '../utils/theme';
 import { IconMail, IconUpload } from '../components/Icons';
 
@@ -61,6 +62,7 @@ function MyDetailsForm({ currentUser, updateProfile }) {
 
 export default function SettingsPage() {
   const { currentUser, state, updateProfile, clearAllData, switchUser } = useApp();
+  const { workspace } = useWorkspaceScope();
   const [tab, setTab] = useState('My details');
   const [theme, setTheme] = useState(getTheme);
 
@@ -77,7 +79,7 @@ export default function SettingsPage() {
           <span className="settings-avatar">{currentUser.initials}</span>
           <div className="settings-hero-text">
             <h1>Settings</h1>
-            <p>{currentUser.email}</p>
+            <p>{currentUser.email} · {workspace?.name}</p>
           </div>
           <div className="settings-hero-actions">
             <button type="button" className="ghost-btn">Cancel</button>

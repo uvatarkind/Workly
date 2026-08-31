@@ -23,3 +23,23 @@ export const ROLE_LABELS = {
 };
 
 export const PROJECT_VIEWS = ['overview', 'board', 'list', 'calendar'];
+
+export const TASK_LABELS = [
+  'Design',
+  'Development',
+  'Research',
+  'Marketing',
+  'Mobile',
+  'Content',
+  'Planning',
+];
+
+export const LABEL_COLORS = {
+  Design: 'design',
+  Development: 'planning',
+  Research: 'research',
+  Marketing: 'content',
+  Mobile: 'design',
+  Content: 'content',
+  Planning: 'planning',
+};

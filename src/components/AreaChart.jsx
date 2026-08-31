@@ -56,10 +56,10 @@ const AreaChart = ({ labels, created, completed }) => {
   const completedGradId = useId();
   const createdGradId = useId();
   const width = 640;
-  const height = 260;
+  const height = 200;
   const padLeft = 42;
-  const padTop = 12;
-  const padBottom = 34;
+  const padTop = 10;
+  const padBottom = 28;
   const baseline = height - padBottom;
 
   const maxY = niceAxisMax([...created, ...completed]);

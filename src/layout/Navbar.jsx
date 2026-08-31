@@ -1,11 +1,15 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { IconBell, IconChevronDown, IconMenu, IconSearch } from '../components/Icons';
+import WorkspaceSwitcher from '../components/WorkspaceSwitcher';
 import { useApp } from '../context/AppContext';
+import { useRouteWorkspaceId } from '../utils/useRouteWorkspaceId';
+import { workspaceSectionPath } from '../utils/useWorkspaceScope';
 
-export default function Navbar({ menuOpen, onMenuToggle, onSearchOpen }) {
+export default function Navbar({ menuOpen, onMenuToggle, onSearchOpen, onCreateWorkspace }) {
   const { currentUser, myNotifications } = useApp();
   const unread = myNotifications.filter((n) => !n.read).length;
+  const wsId = useRouteWorkspaceId();
 
   useEffect(() => {
     function onKey(e) {
@@ -32,6 +36,8 @@ export default function Navbar({ menuOpen, onMenuToggle, onSearchOpen }) {
           <span className="visually-hidden">Menu</span>
         </button>
 
+        <WorkspaceSwitcher onCreateWorkspace={onCreateWorkspace} />
+
         <button type="button" className="search" onClick={onSearchOpen}>
           <IconSearch />
           <span className="search-placeholder">Search anything…</span>
@@ -39,12 +45,12 @@ export default function Navbar({ menuOpen, onMenuToggle, onSearchOpen }) {
         </button>
 
         <div className="nav-actions">
-          <Link to="/notifications" className="bell" title="Notifications">
+          <Link to={workspaceSectionPath(wsId, 'notifications')} className="bell" title="Notifications">
             <IconBell />
             {unread > 0 && <span className="badge">{unread}</span>}
             <span className="visually-hidden">{unread} unread notifications</span>
           </Link>
-          <Link to="/settings" className="user-chip" title="Settings">
+          <Link to={workspaceSectionPath(wsId, 'settings')} className="user-chip" title="Settings">
             <span className="avatar">{currentUser.initials}</span>
             <IconChevronDown />
           </Link>
