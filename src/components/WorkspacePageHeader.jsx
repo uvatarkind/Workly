@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { workspacePath } from '../utils/routes';
+import { projectsPathFor } from '../utils/routes';
 
 function typeLabel(type) {
   return type === 'personal' ? 'Personal space' : 'Team workspace';
@@ -17,7 +17,7 @@ export default function WorkspacePageHeader({ workspace, section }) {
           <h1>{section ? section : workspace.name}</h1>
         </div>
       </div>
-      <Link to={workspacePath(workspace.id, 'projects')} className="ghost-btn small">
+      <Link to={projectsPathFor(workspace)} className="ghost-btn small">
         View projects
       </Link>
     </header>

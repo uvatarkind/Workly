@@ -1,17 +1,25 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useOutletContext } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { resolvePersonalWorkspace } from './routes';
 
 export function useWorkspaceScope() {
-  const { workspaceId } = useParams();
+  const { workspaceSlug: paramSlug } = useParams();
+  const outlet = useOutletContext() ?? {};
+  const workspaceSlug = paramSlug ?? outlet.workspaceSlug;
   const {
-    getWorkspace,
+    getWorkspaceBySlug,
     getProjectsByWorkspace,
     getTasksByWorkspace,
     isWorkspaceMember,
+    myWorkspaces,
     state,
   } = useApp();
 
-  const workspace = workspaceId ? getWorkspace(workspaceId) : null;
+  const workspaceFromOutlet = outlet.workspace;
+  const workspace = workspaceFromOutlet
+    ?? (workspaceSlug ? getWorkspaceBySlug(workspaceSlug) : null)
+    ?? resolvePersonalWorkspace(myWorkspaces, getWorkspaceBySlug);
+  const workspaceId = workspace?.id ?? null;
   const isMember = workspaceId ? isWorkspaceMember(workspaceId) : false;
   const projects = workspaceId ? getProjectsByWorkspace(workspaceId) : [];
   const tasks = workspaceId ? getTasksByWorkspace(workspaceId) : [];
@@ -23,6 +31,7 @@ export function useWorkspaceScope() {
     : [];
 
   return {
+    workspaceSlug: workspace?.slug ?? workspaceSlug,
     workspaceId,
     workspace,
     isMember,
@@ -33,27 +42,10 @@ export function useWorkspaceScope() {
   };
 }
 
-export function workspaceSectionPath(workspaceId, section) {
-  return `/w/${workspaceId}/${section}`;
-}
-
-export function currentSectionFromPath(pathname) {
-  const match = pathname.match(/^\/w\/[^/]+\/(.+)$/);
-  if (match) {
-    const rest = match[1];
-    if (rest.startsWith('projects/')) return 'projects';
-    if (rest.startsWith('tasks/')) return 'projects';
-    return rest.split('/')[0];
-  }
-
-  const legacy = {
-    '/dashboard': 'dashboard',
-    '/tasks': 'projects',
-    '/timeline': 'timeline',
-    '/calendar': 'calendar',
-    '/files': 'files',
-    '/notifications': 'notifications',
-    '/settings': 'settings',
-  };
-  return legacy[pathname] ?? 'dashboard';
-}
+export {
+  currentSectionFromPath,
+  isPersonalAppPath,
+  isWorkspaceProjectsPath,
+  isWorkspaceSectionPath,
+  workspaceSectionPath,
+} from './routes';

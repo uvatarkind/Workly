@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { workspacePathFor } from '../utils/routes';
 import { useSyncActiveWorkspace } from '../utils/useSyncActiveWorkspace';
 
 export default function WorkspaceAccess({ workspaceId, children }) {
@@ -43,13 +44,17 @@ export default function WorkspaceAccess({ workspaceId, children }) {
               <button type="button" className="primary-btn" onClick={handleAccept}>
                 Accept invite
               </button>
-              <Link to="/notifications" className="ghost-btn">View in notifications</Link>
+              <Link to={workspacePathFor(workspace, 'notifications')} className="ghost-btn">
+                View in notifications
+              </Link>
             </div>
           </>
         ) : (
           <>
             <p>Ask a workspace admin to invite you, or check your notifications for pending invites.</p>
-            <Link to="/notifications" className="ghost-btn">Go to notifications</Link>
+            <Link to={workspacePathFor(workspace, 'notifications')} className="ghost-btn">
+              Go to notifications
+            </Link>
           </>
         )}
       </section>

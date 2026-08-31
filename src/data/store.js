@@ -7,6 +7,28 @@ import {
   seedActivity,
   seedInvites,
 } from './mockData';
+import { slugify, uniqueSlug } from '../utils/slugs';
+
+function assignWorkspaceSlugs(workspaces) {
+  const slugs = [];
+  return workspaces.map((w) => {
+    const seed = seedWorkspaces.find((s) => s.id === w.id);
+    const slug = w.slug ?? seed?.slug ?? uniqueSlug(slugify(w.name ?? 'workspace'), slugs);
+    slugs.push(slug);
+    return { ...w, slug };
+  });
+}
+
+function assignProjectSlugs(projects) {
+  const slugsByWorkspace = {};
+  return projects.map((p) => {
+    const bucket = slugsByWorkspace[p.workspaceId] ?? (slugsByWorkspace[p.workspaceId] = []);
+    const seed = seedProjects.find((s) => s.id === p.id);
+    const slug = p.slug ?? seed?.slug ?? uniqueSlug(slugify(p.name ?? 'project'), bucket);
+    bucket.push(slug);
+    return { ...p, slug };
+  });
+}
 
 const STORAGE_KEY = 'workly.app';
 
@@ -24,6 +46,8 @@ function normalizeState(raw) {
 
   if (!raw) {
     const initial = { ...base };
+    initial.workspaces = assignWorkspaceSlugs(initial.workspaces);
+    initial.projects = assignProjectSlugs(initial.projects);
     initial.activeWorkspaceId = resolveActiveWorkspaceId(initial);
     return initial;
   }
@@ -33,7 +57,7 @@ function normalizeState(raw) {
     ...n,
     userId: n.userId ?? 'u1',
   }));
-  state.workspaces = (state.workspaces ?? []).map((w) => {
+  state.workspaces = assignWorkspaceSlugs(state.workspaces.map((w) => {
     const seed = seedWorkspaces.find((s) => s.id === w.id);
     const memberIds = seed
       ? [...new Set([...(w.memberIds ?? []), ...seed.memberIds])]
@@ -44,20 +68,21 @@ function normalizeState(raw) {
       type: w.type ?? seed?.type ?? 'team',
       icon: w.icon ?? seed?.icon ?? '🏢',
       name: w.name ?? seed?.name ?? 'Workspace',
+      slug: w.slug ?? seed?.slug,
     };
-  });
+  }));
 
   const existingWsIds = new Set(state.workspaces.map((w) => w.id));
-  state.workspaces = [
+  state.workspaces = assignWorkspaceSlugs([
     ...state.workspaces,
     ...seedWorkspaces.filter((w) => !existingWsIds.has(w.id)),
-  ];
+  ]);
 
   const existingProjectIds = new Set(state.projects.map((p) => p.id));
-  state.projects = [
+  state.projects = assignProjectSlugs([
     ...state.projects,
     ...seedProjects.filter((p) => !existingProjectIds.has(p.id)),
-  ];
+  ]);
 
   const existingTaskIds = new Set(state.tasks.map((t) => t.id));
   state.tasks = [
@@ -93,6 +118,7 @@ function resolveActiveWorkspaceId(state) {
     return state.activeWorkspaceId;
   }
   return (
+    myWorkspaces.find((w) => w.type === 'personal')?.id ??
     myWorkspaces.find((w) => w.type === 'team')?.id ??
     myWorkspaces[0]?.id ??
     'ws-personal'
@@ -143,8 +169,23 @@ export function getWorkspace(id) {
   return state.workspaces.find((w) => w.id === id);
 }
 
+export function getWorkspaceBySlug(slug) {
+  if (!slug) return undefined;
+  return (
+    state.workspaces.find((w) => w.slug === slug)
+    ?? state.workspaces.find((w) => w.id === slug)
+  );
+}
+
 export function getProject(id) {
   return state.projects.find((p) => p.id === id);
+}
+
+export function getProjectBySlug(workspaceId, slug) {
+  if (!slug || !workspaceId) return undefined;
+  return state.projects.find(
+    (p) => p.workspaceId === workspaceId && (p.slug === slug || p.id === slug),
+  );
 }
 
 export function getTask(id) {
@@ -442,8 +483,14 @@ export function addComment(taskId, text) {
 }
 
 export function addProject(input) {
+  const workspaceProjects = getProjectsByWorkspace(input.workspaceId);
+  const slug = uniqueSlug(
+    slugify(input.name),
+    workspaceProjects.map((p) => p.slug),
+  );
   const project = {
     id: crypto.randomUUID(),
+    slug,
     workspaceId: input.workspaceId,
     name: input.name.trim(),
     description: input.description?.trim() ?? '',
@@ -457,8 +504,10 @@ export function addProject(input) {
 
 export function addWorkspace(input) {
   const type = input.type ?? 'team';
+  const slug = uniqueSlug(slugify(input.name), state.workspaces.map((w) => w.slug));
   const workspace = {
     id: crypto.randomUUID(),
+    slug,
     name: input.name.trim(),
     type,
     icon: input.icon ?? (type === 'personal' ? '👤' : '🏢'),

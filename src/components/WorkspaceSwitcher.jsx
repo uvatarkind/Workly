@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { workspacePath } from '../utils/routes';
-import { currentSectionFromPath, workspaceSectionPath } from '../utils/useWorkspaceScope';
+import { workspacePathFor } from '../utils/routes';
+import { currentSectionFromPath, workspaceSectionPath } from '../utils/routes';
 import { IconCheckCircle, IconChevronDown, IconPlus } from './Icons';
 
 function workspaceTypeLabel(type) {
@@ -47,7 +47,7 @@ export default function WorkspaceSwitcher({ onCreateWorkspace }) {
     setOpen(false);
 
     const section = currentSectionFromPath(location.pathname);
-    navigate(workspaceSectionPath(workspace.id, section));
+    navigate(workspaceSectionPath(workspace.slug, section));
   }
 
   function handleCreate() {
@@ -112,7 +112,7 @@ export default function WorkspaceSwitcher({ onCreateWorkspace }) {
           <div className="ws-switcher-menu-head">
             <p>Your workspaces</p>
             <Link
-              to={workspacePath(activeWorkspace.id, 'dashboard')}
+              to={workspacePathFor(activeWorkspace, 'dashboard')}
               className="ws-switcher-view-link"
               onClick={() => setOpen(false)}
             >

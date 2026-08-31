@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
 import { IconChevronLeft } from './Icons';
-import { projectsPath, workspacePath } from '../utils/routes';
+import { projectsPathFor, workspacePathFor } from '../utils/routes';
 
 export default function PageNav({ workspace, section, projectName }) {
   if (!workspace) return null;
 
-  const dashboardUrl = workspacePath(workspace.id, 'dashboard');
-  const projectsUrl = projectsPath(workspace.id);
+  const dashboardUrl = workspacePathFor(workspace, 'dashboard');
+  const projectsUrl = projectsPathFor(workspace);
 
   return (
     <nav className="page-nav" aria-label="Page navigation">

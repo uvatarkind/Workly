@@ -1,7 +1,7 @@
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import WorkspacePageHeader from '../components/WorkspacePageHeader';
-import { workspacePath } from '../utils/routes';
+import { workspacePathFor } from '../utils/routes';
 import { useWorkspaceScope } from '../utils/useWorkspaceScope';
 
 function timeAgo(ts) {
@@ -41,7 +41,8 @@ export default function NotificationsPage() {
   function handleAccept(inviteId, workspaceId) {
     const result = acceptWorkspaceInvite(inviteId);
     if (!result.error && workspaceId) {
-      navigate(workspacePath(workspaceId, 'dashboard'));
+      const ws = getWorkspace(workspaceId);
+      navigate(workspacePathFor(ws, 'dashboard'));
     }
   }
 
@@ -53,7 +54,8 @@ export default function NotificationsPage() {
     }
 
     if (notification.type === 'workspace_joined' && notification.workspaceId) {
-      navigate(workspacePath(notification.workspaceId, 'dashboard'));
+      const ws = getWorkspace(notification.workspaceId);
+      navigate(workspacePathFor(ws, 'dashboard'));
       if (!notification.read) markNotificationRead(notification.id);
     }
   }

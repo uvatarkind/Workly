@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import WorkspacePageHeader from '../components/WorkspacePageHeader';
-import { membersPath } from '../utils/routes';
+import { membersPathFor } from '../utils/routes';
 import {
   barMetrics,
   buildTimelineGroups,
@@ -61,7 +61,7 @@ export default function TimelinePage() {
         </div>
         <div className="timeline-head-right">
           {workspace?.type === 'team' && (
-            <Link to={membersPath(workspace.id)} className="primary-btn">
+            <Link to={membersPathFor(workspace)} className="primary-btn">
               <IconPlus />
               Invite
             </Link>

@@ -10,8 +10,13 @@ import {
   IconSettings,
 } from '../components/Icons';
 import { useApp } from '../context/AppContext';
-import { useRouteWorkspaceId } from '../utils/useRouteWorkspaceId';
-import { workspaceSectionPath } from '../utils/useWorkspaceScope';
+import { useRouteWorkspaceSlug } from '../utils/useRouteWorkspaceId';
+import {
+  isPersonalWorkspace,
+  isWorkspaceProjectsPath,
+  isWorkspaceSectionPath,
+  workspaceSectionPath,
+} from '../utils/routes';
 import logo from '../assets/logo.png';
 
 const mainNav = [
@@ -28,15 +33,16 @@ export default function Sidebar({ open, onNavigate, onCreateWorkspace }) {
   const { myNotifications, myWorkspaces, activeWorkspace, setActiveWorkspace } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
-  const wsId = useRouteWorkspaceId();
+  const wsSlug = useRouteWorkspaceSlug();
   const unread = myNotifications.filter((n) => !n.read).length;
+  const currentWorkspace = activeWorkspace ?? myWorkspaces.find((w) => w.slug === wsSlug);
 
   function closeMenu() {
     onNavigate?.();
   }
 
   function goToSection(section) {
-    const target = workspaceSectionPath(wsId, section);
+    const target = workspaceSectionPath(currentWorkspace ?? wsSlug, section);
     if (location.pathname !== target && !location.pathname.startsWith(`${target}/`)) {
       navigate(target);
     }
@@ -45,16 +51,15 @@ export default function Sidebar({ open, onNavigate, onCreateWorkspace }) {
 
   function selectWorkspace(workspace) {
     setActiveWorkspace(workspace.id);
-    navigate(workspaceSectionPath(workspace.id, 'dashboard'));
+    navigate(workspaceSectionPath(workspace, 'dashboard'));
     closeMenu();
   }
 
   function isSectionActive(section) {
-    const base = workspaceSectionPath(wsId, section);
     if (section === 'projects') {
-      return location.pathname.startsWith(`/w/${wsId}/projects`);
+      return isWorkspaceProjectsPath(location.pathname, wsSlug, currentWorkspace);
     }
-    return location.pathname === base;
+    return isWorkspaceSectionPath(location.pathname, wsSlug, section, currentWorkspace);
   }
 
   return (
@@ -94,7 +99,7 @@ export default function Sidebar({ open, onNavigate, onCreateWorkspace }) {
                   <span className="sidebar-workspace-text">
                     <span className="sidebar-workspace-name">{workspace.name}</span>
                     <span className="sidebar-workspace-type">
-                      {workspace.type === 'personal' ? 'Personal' : 'Team'}
+                      {isPersonalWorkspace(workspace) ? 'Personal' : 'Team'}
                     </span>
                   </span>
                 </button>

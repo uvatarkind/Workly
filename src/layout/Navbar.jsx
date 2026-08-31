@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 import { IconBell, IconChevronDown, IconMenu, IconSearch } from '../components/Icons';
 import WorkspaceSwitcher from '../components/WorkspaceSwitcher';
 import { useApp } from '../context/AppContext';
-import { useRouteWorkspaceId } from '../utils/useRouteWorkspaceId';
-import { workspaceSectionPath } from '../utils/useWorkspaceScope';
+import { useRouteWorkspaceSlug } from '../utils/useRouteWorkspaceId';
+import { workspaceSectionPath } from '../utils/routes';
 
 export default function Navbar({ menuOpen, onMenuToggle, onSearchOpen, onCreateWorkspace }) {
   const { currentUser, myNotifications } = useApp();
   const unread = myNotifications.filter((n) => !n.read).length;
-  const wsId = useRouteWorkspaceId();
+  const wsSlug = useRouteWorkspaceSlug();
 
   useEffect(() => {
     function onKey(e) {
@@ -45,12 +45,12 @@ export default function Navbar({ menuOpen, onMenuToggle, onSearchOpen, onCreateW
         </button>
 
         <div className="nav-actions">
-          <Link to={workspaceSectionPath(wsId, 'notifications')} className="bell" title="Notifications">
+          <Link to={workspaceSectionPath(wsSlug, 'notifications')} className="bell" title="Notifications">
             <IconBell />
             {unread > 0 && <span className="badge">{unread}</span>}
             <span className="visually-hidden">{unread} unread notifications</span>
           </Link>
-          <Link to={workspaceSectionPath(wsId, 'settings')} className="user-chip" title="Settings">
+          <Link to={workspaceSectionPath(wsSlug, 'settings')} className="user-chip" title="Settings">
             <span className="avatar">{currentUser.initials}</span>
             <IconChevronDown />
           </Link>

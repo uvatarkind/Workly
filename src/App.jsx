@@ -14,14 +14,29 @@ import FilesPage from './pages/FilesPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import {
+  LegacyWPrefixRedirect,
+  LegacyWProjectRedirect,
   LegacyWorkspaceRedirect,
+  PersonalLegacyRedirect,
   ProjectLegacyRedirect,
   TasksLegacyRedirect,
-  WorkspaceLegacyRedirect,
-  WorkspaceMembersLegacyRedirect,
-  WorkspaceProjectsLegacyRedirect,
-  WorkspaceTasksLegacyRedirect,
+  WorkspacePersonalLegacyRedirect,
 } from './utils/workspaceRoutes';
+
+const workspacePages = (
+  <>
+    <Route index element={<Navigate to="dashboard" replace />} />
+    <Route path="dashboard" element={<DashboardPage />} />
+    <Route path="projects" element={<ProjectsPage />} />
+    <Route path="projects/:projectSlug" element={<ProjectPage />} />
+    <Route path="members" element={<MembersPage />} />
+    <Route path="timeline" element={<TimelinePage />} />
+    <Route path="calendar" element={<CalendarPage />} />
+    <Route path="files" element={<FilesPage />} />
+    <Route path="notifications" element={<NotificationsPage />} />
+    <Route path="settings" element={<SettingsPage />} />
+  </>
+);
 
 export default function App() {
   return (
@@ -32,17 +47,11 @@ export default function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route element={<AppLayout />}>
             <Route index element={<LegacyWorkspaceRedirect section="dashboard" />} />
-            <Route path="w/:workspaceId" element={<WorkspaceLayout />}>
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="projects" element={<ProjectsPage />} />
-              <Route path="projects/:projectId" element={<ProjectPage />} />
-              <Route path="members" element={<MembersPage />} />
-              <Route path="timeline" element={<TimelinePage />} />
-              <Route path="calendar" element={<CalendarPage />} />
-              <Route path="files" element={<FilesPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="settings" element={<SettingsPage />} />
+            <Route path="personal" element={<WorkspaceLayout />}>
+              {workspacePages}
+            </Route>
+            <Route path="workspace/:workspaceSlug" element={<WorkspaceLayout />}>
+              {workspacePages}
             </Route>
             <Route path="dashboard" element={<LegacyWorkspaceRedirect section="dashboard" />} />
             <Route path="tasks" element={<LegacyWorkspaceRedirect section="projects" />} />
@@ -52,10 +61,11 @@ export default function App() {
             <Route path="files" element={<LegacyWorkspaceRedirect section="files" />} />
             <Route path="notifications" element={<LegacyWorkspaceRedirect section="notifications" />} />
             <Route path="settings" element={<LegacyWorkspaceRedirect section="settings" />} />
-            <Route path="workspace/:id" element={<WorkspaceLegacyRedirect />} />
-            <Route path="workspace/:id/projects" element={<WorkspaceProjectsLegacyRedirect />} />
-            <Route path="workspace/:id/tasks" element={<WorkspaceTasksLegacyRedirect />} />
-            <Route path="workspace/:id/members" element={<WorkspaceMembersLegacyRedirect />} />
+            <Route path="w/:workspaceId" element={<LegacyWPrefixRedirect />} />
+            <Route path="w/:workspaceId/:section" element={<LegacyWPrefixRedirect />} />
+            <Route path="w/:workspaceId/projects/:projectId" element={<LegacyWProjectRedirect />} />
+            <Route path="workspace/personal/*" element={<WorkspacePersonalLegacyRedirect />} />
+            <Route path="workspace/ws-personal/*" element={<PersonalLegacyRedirect />} />
             <Route path="project/:id" element={<ProjectLegacyRedirect />} />
           </Route>
         </Routes>

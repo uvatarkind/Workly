@@ -10,6 +10,7 @@ import {
   TASK_LABELS,
 } from '../data/constants';
 import { coverVariant, columnForTask, BOARD_COLUMNS } from '../utils/board';
+import { projectPathFor } from '../utils/routes';
 import { IconCheck, IconX } from './Icons';
 
 function timeAgo(ts) {
@@ -92,7 +93,7 @@ export default function TaskDrawer({ taskId, onClose }) {
           <div className="task-modal-header-main">
             <span className="task-modal-list-name">
               {column?.label ?? 'Task'} in{' '}
-              <Link to={projectPath(task.workspaceId, task.projectId)} onClick={onClose}>
+              <Link to={projectPathFor(workspace, project)} onClick={onClose}>
                 {project?.name}
               </Link>
             </span>
@@ -313,7 +314,7 @@ export default function TaskDrawer({ taskId, onClose }) {
 
             <div className="task-sidebar-meta">
               <span>Project</span>
-              <Link to={projectPath(task.workspaceId, task.projectId)} onClick={onClose}>
+              <Link to={projectPathFor(workspace, project)} onClick={onClose}>
                 {project?.name}
               </Link>
               <span>Workspace</span>

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { projectProgress } from '../data/store';
 import { formatDate } from '../utils/dates';
-import { openCreate, projectPath } from '../utils/routes';
+import { openCreate, projectPathFor } from '../utils/routes';
 import { useWorkspaceScope } from '../utils/useWorkspaceScope';
 import { IconPlus } from '../components/Icons';
 
@@ -52,7 +52,7 @@ export default function ProjectsPage() {
             return (
               <Link
                 key={project.id}
-                to={projectPath(workspaceId, project.id)}
+                to={projectPathFor(workspace, project)}
                 className="project-card large"
               >
                 <div className="project-card-top">

@@ -20,6 +20,7 @@ export const seedUsers = [
 export const seedWorkspaces = [
   {
     id: 'ws-personal',
+    slug: 'personal',
     name: 'Personal',
     type: 'personal',
     icon: '👤',
@@ -27,6 +28,7 @@ export const seedWorkspaces = [
   },
   {
     id: 'ws-acme',
+    slug: 'acme-team',
     name: 'Acme Team',
     type: 'team',
     icon: '🏢',
@@ -34,6 +36,7 @@ export const seedWorkspaces = [
   },
   {
     id: 'ws-design',
+    slug: 'design-team',
     name: 'Design Team',
     type: 'team',
     icon: '🎨',
@@ -56,6 +59,7 @@ export const seedInvites = [
 export const seedProjects = [
   {
     id: 'p1',
+    slug: 'website-redesign',
     workspaceId: 'ws-acme',
     name: 'Website Redesign',
     description: 'Complete overhaul of the marketing website with new brand guidelines.',
@@ -65,6 +69,7 @@ export const seedProjects = [
   },
   {
     id: 'p2',
+    slug: 'mobile-app',
     workspaceId: 'ws-acme',
     name: 'Mobile App',
     description: 'Native mobile app for iOS and Android.',
@@ -74,6 +79,7 @@ export const seedProjects = [
   },
   {
     id: 'p3',
+    slug: 'marketing-campaign',
     workspaceId: 'ws-acme',
     name: 'Marketing Campaign',
     description: 'Q4 launch campaign across email, social, and paid channels.',
@@ -83,6 +89,7 @@ export const seedProjects = [
   },
   {
     id: 'p4',
+    slug: 'side-project',
     workspaceId: 'ws-personal',
     name: 'Side Project',
     description: 'Personal learning project.',

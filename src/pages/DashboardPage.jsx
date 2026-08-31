@@ -11,7 +11,7 @@ import {
   sparklineValues,
   weekDelta,
 } from '../utils/analytics';
-import { useWorkspaceScope, workspaceSectionPath } from '../utils/useWorkspaceScope';
+import { workspaceSectionPath } from '../utils/routes';
 
 export default function DashboardPage() {
   const {
@@ -92,7 +92,7 @@ export default function DashboardPage() {
               );
             })}
           </ul>
-          <Link to={workspaceSectionPath(workspaceId, 'notifications')} className="ghost-btn small">View all notifications</Link>
+          <Link to={workspaceSectionPath(workspace?.slug, 'notifications')} className="ghost-btn small">View all notifications</Link>
         </section>
       )}
 

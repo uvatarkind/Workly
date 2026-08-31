@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { membersPathFor } from '../utils/routes';
 import { ROLE_LABELS } from '../data/constants';
 
 export default function TeamPanel({ workspaceId, showHeader = true }) {
@@ -36,7 +37,7 @@ export default function TeamPanel({ workspaceId, showHeader = true }) {
             <h2>{workspace.icon} {workspace.name}</h2>
             <p>{members.length} member{members.length === 1 ? '' : 's'}</p>
           </div>
-          <Link to={`/workspace/${workspaceId}/members`} className="ghost-btn small">
+          <Link to={membersPathFor(workspace)} className="ghost-btn small">
             Open full page
           </Link>
         </header>

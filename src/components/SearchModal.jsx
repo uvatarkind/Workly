@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { projectPath, workspacePath } from '../utils/routes';
+import { projectPathFor, workspacePathFor } from '../utils/routes';
 import { IconSearch, IconX } from './Icons';
 
 export default function SearchModal({ onClose, onOpenTask }) {
-  const { searchAll } = useApp();
+  const { searchAll, getWorkspace } = useApp();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const results = searchAll(query);
@@ -58,7 +58,11 @@ export default function SearchModal({ onClose, onOpenTask }) {
                 <ul>
                   {results.projects.map((project) => (
                     <li key={project.id}>
-                      <button type="button" onClick={() => { navigate(projectPath(project.workspaceId, project.id)); onClose(); }}>
+                      <button type="button" onClick={() => {
+                        const ws = getWorkspace(project.workspaceId);
+                        navigate(projectPathFor(ws, project));
+                        onClose();
+                      }}>
                         {project.name}
                       </button>
                     </li>
@@ -72,7 +76,7 @@ export default function SearchModal({ onClose, onOpenTask }) {
                 <ul>
                   {results.workspaces.map((workspace) => (
                     <li key={workspace.id}>
-                      <button type="button" onClick={() => { navigate(workspacePath(workspace.id, 'dashboard')); onClose(); }}>
+                      <button type="button" onClick={() => { navigate(workspacePathFor(workspace, 'dashboard')); onClose(); }}>
                         {workspace.icon} {workspace.name}
                       </button>
                     </li>
