@@ -511,6 +511,10 @@ export function updateProfile(patch) {
 }
 
 export function clearAllData() {
+  localStorage.removeItem('workly.files');
+  localStorage.removeItem('workly.boardChat');
+  localStorage.removeItem('workly.demoPasswords');
+  localStorage.removeItem('workly.defaultView');
   return resetState();
 }
 
